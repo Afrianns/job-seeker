@@ -37,7 +37,7 @@
                                 </svg>
                             </button>
                             <div id="dropdownDots-left" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-40  ">
-                                <ul class="py-2 text-sm text-gray-700 " aria-labelledby="left-bubble">
+                                <ul class="py-2 text-sm text-gray-700">
                                     <li>
                                         <a href="#" class="block px-4 py-2 hover:bg-gray-100">Reply</a>
                                     </li>
@@ -58,24 +58,27 @@
                                 </div>
                                 <p class="text-sm font-normal pt-2.5 text-gray-900" x-text="message.message"></p>
                             </div>
-                            <button id="right-bubble" data-dropdown-toggle="dropdownDots-right" data-dropdown-placement="bottom-end" class="inline-flex self-center items-center p-2 text-sm font-medium text-center text-gray-900 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50" type="button">
-                                <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 4 15">
-                                    <path d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
-                                </svg>
-                            </button>
-                            <div id="dropdownDots-right" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-40  ">
-                                <ul class="py-2 text-sm text-gray-700 " aria-labelledby="right-bubble">
-                                    <li>
-                                        <a href="#" class="block px-4 py-2 hover:bg-gray-100">Reply</a>
-                                    </li>
-                                    <li>
-                                        <a href="#" class="block px-4 py-2 hover:bg-gray-100">Delete</a>
-                                    </li>
-                                </ul>
+                            <div class="relative inline-flex self-center items-center">
+                                <button x-on:click="openChatMenu = (openChatMenu === `drop-${message.id}`) ? '' : $nextTick(() => openChatMenu = `drop-${message.id}`)" class="flex my-auto p-2 text-sm font-medium text-center text-gray-900 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50" type="button">
+                                    <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 4 15">
+                                        <path d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
+                                    </svg>
+                                </button>
+                                <div x-show="openChatMenu == `drop-${message.id}`" @click.outside="openChatMenu = ''" class="z-10 right-0 top-10 absolute bg-white divide-gray-100 rounded-lg shadow-sm w-40">
+                                    <ul class="py-2 text-sm text-gray-700 ">
+                                        <li>
+                                            <a href="#" class="block px-4 py-2 hover:bg-gray-100">Reply</a>
+                                        </li>
+                                        <li>
+                                            <a href="#" class="block px-4 py-2 hover:bg-gray-100">Delete</a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </template>
                 </div>
+                
             </template>
             <div class="inline-flex items-center justify-center w-full relative" x-show="initialLoadErrorValue">
                 <hr class="border-t border-gray-300 m-5 w-full">
@@ -112,6 +115,7 @@
         Alpine.data('chattingFunction', () => ({
             
             messageValue: "",
+            openChatMenu: "",
             initialLoadErrorValue: "",
             messages: [],
 
