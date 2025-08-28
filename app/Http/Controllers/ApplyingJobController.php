@@ -3,14 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\JobListing;
+use App\Models\Message;
+use App\Models\User;
+use Carbon\Carbon;
+use Exception;
+use GuzzleHttp\Promise\Create;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
 class ApplyingJobController extends Controller
 {
-
     public function myApplication(?string $id = null)
     {
         $selected_application = null;
@@ -98,4 +104,77 @@ class ApplyingJobController extends Controller
             "size" => $file_size
         ];
     }
+
+    public function getMessage(string $job_id) {
+
+        $messages = Message::with(["user"])->where("job_id", $job_id)->get();
+
+        if($messages->count() >= 1){
+            
+            $user = User::where("id", $messages->first()->user_id)->first();
+            
+            $result = Arr::map($messages->toArray(), function($message) use ($user) {
+                return [
+                    "id" => $message["id"],
+                    "message" => $message["message"],
+                    "user_id" => $user["id"],
+                    "user_name" => $user["name"],
+                    "user_avatar" => ($user["avatar_path"]) ? $user["avatar_path"] : "/storage/avatars/no-avatar.svg",
+                    "is_user_recruiter" => $user["is_recruiter"],
+                    "created_at" => Carbon::parse($message["created_at"])->timezone("Asia/Jakarta")->toDayDateTimeString()
+                ];
+            });   
+            return $result;
+        } else{
+            return throw new Exception("No Message Exist");
+        }
+    }
+
+    public function sendMessage(Request $request)
+    {
+
+        $validated = $request->validate([
+            "message" => "required|min:5",
+            "jobId" => "required|exists:job_listings,id"
+        ]);
+
+        $result = Message::create([
+            "user_id" => Auth::user()->id,
+            "job_id" => $validated["jobId"],
+            "message" => $validated['message']
+        ]);
+
+        if($result){
+
+            $sender = User::where("id", $result["user_id"])->first();
+
+            return response()->json([
+                "id" => $result["id"],
+                "message" => $result["message"],
+                "user_id" => $sender["id"],
+                "user_name" => $sender["name"],
+                "user_avatar" => ($sender["avatar_path"]) ? $sender["avatar_path"] : "/storage/avatars/no-avatar.svg",
+                "is_user_recruiter" => $sender["is_recruiter"],
+                "created_at" => Carbon::parse($result["created_at"])->timezone("Asia/Jakarta")->toDayDateTimeString()
+            ]);
+        }
+    }
 }
+
+
+// created_at : "2025-08-28T07:45:26.000000Z"
+// id: "0198efa3-8026-7080-84ff-a20c8d10894a"
+// message: "glad is here"
+// updated_at: "2025-08-28T07:45:26.000000Z"
+// user_id: "0198cb5e-f6f0-7055-b263-12e98dd6fa61"
+// user: 
+
+// avatar_path: null
+// company_id :null
+// created_at : "2025-08-21T06:44:15.000000Z"
+// email : "jackson@gmail.com"
+// email_verified_at : null
+// id : "0198cb5e-f6f0-7055-b263-12e98dd6fa61"
+// is_recruiter : 0
+// name : "jackson"
+// updated_at : "2025-08-21T06:44:15.000000Z"

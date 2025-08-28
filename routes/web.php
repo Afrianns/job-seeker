@@ -34,6 +34,10 @@ Route::middleware("auth")->group(function() {
 
     Route::get("/profile/user/cv/show", [ProfileController::class, "displayProfileCVPOST"])->name("user-cv-file");
 
+    Route::post("/send-message", [ApplyingJobController::class, "sendMessage"])->name("send-message");
+
+    Route::get("/job/message/{job_id}", [ApplyingJobController::class, "getMessage"]);
+
     Route::middleware("recruiter")->group(function() {  
 
         Route::get("/reported/jobs",[JobListingController::class, "reportedJobPosted"])->name("reported-job-posted");
