@@ -4,14 +4,14 @@
             <div class="border border-gray-200 px-3 py-2 flex items-center justify-between bg-white">
                 <div>
                     <h4 class="font-medium">Your CV Document</h4>
-                    <a target="_blank" href="{{ route('user-cv-file') }}" class="text-blue-500 hover:underline hover:text-blue-800">{{ $selected_application->name }}</a>
+                    <a target="_blank" href="{{ route('user-cv-file') }}" class="text-blue-500 hover:underline hover:text-blue-800">{{ $selected_application['application']->name }}</a>
                 </div>
                 <div>
                     <p class="border border-gray-200 py-1 px-2">
-                        Size: <strong>{{ $selected_application->size }}</strong>
+                        Size: <strong>{{ $selected_application['application']->size }}</strong>
                     </p>
                     <p class="border border-gray-200 py-1 px-2">
-                        Type: <strong>{{ $selected_application->type }}</strong>
+                        Type: <strong>{{ $selected_application['application']->type }}</strong>
                     </p>
                 </div>
             </div>
@@ -19,11 +19,16 @@
         </div>
 
         <div class="h-full overflow-y-auto space-y-3 mt-auto">
-            <template x-for="message in messages" :key="message.id">
+            <template x-for="(message, idx) in messages" :key="message.id">
                 <div>
-                    <template x-if="message.is_user_recruiter">
+                    <template x-if="message.receiver_id != '{{ Auth::user()->id }}'">
                         <div class="flex items-start gap-2.5">
-                            <img class="w-8 h-8 rounded-full" :src="message.user_avatar" alt="Jese image">
+                            <template x-if="minimizeContent(messages, idx)">
+                                <img class="w-8 h-8 rounded-full" :src="message.user_avatar" alt="Jese image">
+                            </template>
+                            <template x-if="!minimizeContent(messages, idx)">
+                                <span class="w-8"></span>
+                            </template>
                             <div class="flex flex-col w-full max-w-[320px] leading-1.5 p-4 border-gray-200 bg-white rounded-e-xl rounded-es-xl">
                                 <div class="flex items-center space-x-2 rtl:space-x-reverse">
                                     <span class="text-sm font-semibold text-gray-900" x-text="message.user_name"></span>
@@ -48,9 +53,15 @@
                             </div>
                         </div>
                     </template>
-                    <template x-if="!message.is_user_recruiter">
+                    <template x-if="message.sender_id == '{{ Auth::user()->id }}'">
                         <div class="flex items-start gap-2.5 flex-row-reverse">
-                            <img class="w-8 h-8 rounded-full" :src="message.user_avatar" alt="Jese image">
+                            <template x-if="minimizeContent(messages, idx)">
+                                <img class="w-8 h-8 rounded-full" :src="message.user_avatar" alt="Jese image">
+                            </template>
+                            <template x-if="!minimizeContent(messages, idx)">
+                                <span class="w-8"></span>
+                            </template>
+
                             <div class="flex flex-col w-full max-w-[320px] leading-1.5 p-4 border-gray-200 bg-purple-200 rounded-s-xl rounded-ee-xl">
                                 <div class="flex items-center space-x-2 rtl:space-x-reverse">
                                     <span class="text-sm font-semibold text-gray-900" x-text="message.user_name"></span>
@@ -78,15 +89,19 @@
                         </div>
                     </template>
                 </div>
-                
             </template>
-            <div class="inline-flex items-center justify-center w-full relative" x-show="initialLoadErrorValue">
+
+            <div class="inline-flex items-center justify-center w-full relative" x-show="initialLoadErrorValue" x-cloak>
                 <hr class="border-t border-gray-300 m-5 w-full">
                 <p class="absolute bg-gray-100 px-3 text-center text-gray-600 text-md" x-text="initialLoadErrorValue"></p>
             </div>
+
+            <template x-if="initialLoadLoading" x-cloak>
+                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto" width="48" height="48" viewBox="0 0 24 24"><circle cx="18" cy="12" r="0" fill="currentColor"><animate attributeName="r" begin=".67" calcMode="spline" dur="1.5s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite" values="0;2;0;0"/></circle><circle cx="12" cy="12" r="0" fill="currentColor"><animate attributeName="r" begin=".33" calcMode="spline" dur="1.5s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite" values="0;2;0;0"/></circle><circle cx="6" cy="12" r="0" fill="currentColor"><animate attributeName="r" begin="0" calcMode="spline" dur="1.5s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite" values="0;2;0;0"/></circle></svg>
+            </template>
         </div>
 
-        <form x-on:submit.prevent="sendMessage('{{ $selected_application->job->id }}')" class="flex items-center mx-auto w-full mt-auto">
+        <form x-on:submit.prevent="sendMessage('{{ $selected_application['application']->job->id }}','{{ $selected_application['sender_id'] }}','{{ $selected_application['receiver_id'] }}')" class="flex items-center mx-auto w-full mt-auto">
             <label for="voice-search" class="sr-only">Search</label>
             <div class="relative w-full">
                 <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -99,9 +114,16 @@
                     </svg>
                 </button>
             </div>
-            <button class="inline-flex items-center py-2.5 px-3 ms-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
-                <svg xmlns="http://www.w3.org/2000/svg" class="me-2" width="16" height="16" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14L21 3m0 0l-6.5 18a.55.55 0 0 1-1 0L10 14l-7-3.5a.55.55 0 0 1 0-1z"/></svg>Send
-            </button>
+            <template x-if="sending" x-cloak>
+                <div class="inline-flex items-center py-2 px-7 ms-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="18" cy="12" r="0" fill="currentColor"><animate attributeName="r" begin=".67" calcMode="spline" dur="1.5s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite" values="0;2;0;0"/></circle><circle cx="12" cy="12" r="0" fill="currentColor"><animate attributeName="r" begin=".33" calcMode="spline" dur="1.5s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite" values="0;2;0;0"/></circle><circle cx="6" cy="12" r="0" fill="currentColor"><animate attributeName="r" begin="0" calcMode="spline" dur="1.5s" keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite" values="0;2;0;0"/></circle></svg>
+                </div>
+            </template>
+            <template x-if="!sending" x-cloak>
+                <button class="inline-flex items-center py-2.5 px-3 ms-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="me-2" width="16" height="16" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14L21 3m0 0l-6.5 18a.55.55 0 0 1-1 0L10 14l-7-3.5a.55.55 0 0 1 0-1z"/></svg>Send
+                </button>
+            </template>
         </form>
     </div>
 @else
@@ -119,38 +141,56 @@
             initialLoadErrorValue: "",
             messages: [],
 
+            sending: false,
+            initialLoadLoading: false,
+
             initialize(){
-                let jobId = "{{ ($selected_application != null) ? $selected_application->job->id : '' }}"
+                let jobId = "{{ ($selected_application != null && $selected_application['application'] != null) ? $selected_application['application']->job->id : '' }}"
                 if(jobId) {
+                    this.initialLoadLoading = true
                     axios.get(`/job/message/${jobId}`).then((res) => {
-                        console.log(res)
                         this.messages = res.data
                     }).catch((err) => {
                         if(err.response){
                             this.initialLoadErrorValue = err.response.data.message;
                         }
                         console.log(err.response)
+                    }).finally(() => {
+                        this.initialLoadLoading = false
                     })
 
                 }
             },
 
-            sendMessage(jobId) {
+            sendMessage(jobId, senderId, receiverId) {
 
                 if (this.messageValue.trim() == "") return
+                this.sending = true;
 
                 axios.post("/send-message", {
                     message: this.messageValue,
-                    jobId: jobId
+                    jobId: jobId,
+                    senderId: senderId,
+                    receiverId: receiverId
                 }).then((res) => {
-                    console.log(res.data)
                     this.messages.push(res.data)
                 }).catch((err) => {
                     console.log(err,err.response)
+                }).finally(() => {
+                    this.sending = false
+                    this.messageValue = ""
+                    this.initialLoadErrorValue = ""
                 })
 
-                this.messageValue = ""
-                this.initialLoadErrorValue = ""
+            },
+
+            minimizeContent(messages, idx){
+                if(idx >= 1 && messages[idx-1].sender_id == messages[idx].sender_id || 
+                    idx >= 1 && messages[idx-1].receiver_id == messages[idx].receiver_id){
+                    return false
+                } else{
+                    return true;
+                }
             }
         }))
     })

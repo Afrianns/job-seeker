@@ -15,7 +15,7 @@ class chating extends Component
 
     public $selected_application;
 
-    public function __construct(Application $selectedApplication)
+    public function __construct(?array $selectedApplication)
     {
         //
         $this->selected_application = $selectedApplication;

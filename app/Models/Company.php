@@ -33,6 +33,6 @@ class Company extends Model
 
     public function recruiter(): HasOne
     {
-        return $this->hasOne(Company::class);
+        return $this->hasOne(User::class);
     }
 }

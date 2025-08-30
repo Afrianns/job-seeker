@@ -30,9 +30,8 @@
                         @if (Auth::user()->is_recruiter)
                             <li class="hover:underline cursor-pointer"><a href="{{ route('reported-job-posted') }}" class="{{ request()->routeIs('reported-job-posted') ? 'underline' : '' }}">Reported Jobs</a></li>
                             <li class="hover:underline cursor-pointer"><a href="{{ route('new-job') }}" class="{{ request()->routeIs('new-job') ? 'underline' : '' }}">New Job</a></li>
-                            <li class="hover:underline cursor-pointer"><a href="#" class="{{ request()->routeIs('applicants') ? 'underline' : '' }}">Applicants</a></li>
-                        @endif
-                        @if (!Auth::user()->is_recruiter)
+                            <li class="hover:underline cursor-pointer"><a href="{{ route('user-jobs-applications.jobs') }}" class="{{ request()->routeIs('user-jobs-applications.*') ? 'underline' : '' }}">Applicants</a></li>
+                        @else
                             <li class="hover:underline cursor-pointer"><a href="{{ route('my-application') }}" class="{{ request()->routeIs('my-application') ? 'underline' : '' }}">My Applications</a></li>
                         @endif
                         <li class="hover:underline cursor-pointer"><a href="{{ route('profile') }}" class="{{ request()->routeIs('profile') ? 'underline' : '' }}">Profile</a></li>

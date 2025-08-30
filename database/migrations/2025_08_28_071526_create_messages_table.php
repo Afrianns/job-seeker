@@ -16,6 +16,8 @@ return new class extends Migration
             $table->uuid("id")->primary();
             $table->string("job_id");
             $table->text("message");
+            $table->string("sender_id");
+            $table->string("receiver_id");
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
         });

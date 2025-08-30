@@ -5,7 +5,7 @@
         <div class="flex max-w-[1140px] mx-auto justify-center mt-5">
             <section class="sticky top-5 w-full max-w-[400px] h-fit border bg-white border-gray-300 rounded p-5">
                 @foreach ($applications as $application)
-                    <div onclick="window.location = '{{ route('my-application', ['id' => $application->id]) }}'" @class(["block border border-gray-300 rounded-md py-2 px-3 space-y-3 hover:bg-gray-50 cursor-pointer", "border-purple-500 bg-purple-50 hover:bg-purple-100" => $selected_application != null && $application->id == $selected_application->id])>
+                    <div onclick="window.location = '{{ route('my-application', ['id' => $application->id]) }}'" @class(["block border border-gray-300 rounded-md py-2 px-3 space-y-3 hover:bg-gray-50 cursor-pointer", "border-purple-500 bg-purple-50 hover:bg-purple-100" => $selected_application != null && $application->id == $selected_application['application']->id])>
                         <h3>{{ $application->Job->title }}</h3>
                         <div class="flex gap-x-2 items-center text-sm">
                             <img src="{{ $application->Job->company->logo_path ?? '/storage/companies_logo/no-logo.png' }}" class="w-7 h-7 bg-red-50 rounded-full" alt="company logo image" />

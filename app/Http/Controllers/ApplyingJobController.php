@@ -22,11 +22,42 @@ class ApplyingJobController extends Controller
         $selected_application = null;
         
         if(isset($id)){
-            $selected_application = Application::with("job")->where("user_id", Auth::user()->id)->firstWhere("id", $id);
+            $application = Application::with("job", "job.company")->where("user_id", Auth::user()->id)->firstWhere("id", $id);
+        
+            $selected_application = [
+                'sender_id' => Auth::user()->id,
+                'receiver_id' => $application->job->company->recruiter->id,
+                "application" => $application
+            ];
         }
 
         $applications = Application::with("job")->where("user_id", Auth::user()->id)->get();
         return view("my-application", compact("applications"), compact("selected_application"));
+    }
+
+    // Admin application display
+    public function userJobsApplications(){
+        $jobs_applications = JobListing::withCount("application")->get();
+        return view("admin.jobs-applications.jobs-applications", compact("jobs_applications"));
+    }
+
+    public function userApplications(string $job_id, ?string $application_id = null){
+        $selected_application = null;
+        
+        if(isset($application_id)){
+
+            $application = Application::with("job")->firstWhere("id", $application_id);
+            $selected_application = [
+                'sender_id' => Auth::user()->id,
+                'receiver_id' => $application->user->id,
+                'application' => $application
+            ];
+        }
+
+        // $applications = Application::with("job")->get();
+
+        $job_applications = JobListing::with("application")->where("id", $job_id)->first();
+        return view("admin.jobs-applications.applicants", compact("job_applications"), compact("selected_application"));
     }
 
     public function applyJobPOST(Request $request) 
@@ -113,17 +144,19 @@ class ApplyingJobController extends Controller
             
             $user = User::where("id", $messages->first()->user_id)->first();
             
-            $result = Arr::map($messages->toArray(), function($message) use ($user) {
+            $result = $messages->map(function($message) use ($user) {
                 return [
-                    "id" => $message["id"],
-                    "message" => $message["message"],
-                    "user_id" => $user["id"],
-                    "user_name" => $user["name"],
+                    "id" => $message->id,
+                    "message" => $message->message,
+                    "user_id" => $message->user->id,
+                    "user_name" => $message->user->name,
                     "user_avatar" => ($user["avatar_path"]) ? $user["avatar_path"] : "/storage/avatars/no-avatar.svg",
-                    "is_user_recruiter" => $user["is_recruiter"],
-                    "created_at" => Carbon::parse($message["created_at"])->timezone("Asia/Jakarta")->toDayDateTimeString()
+                    "sender_id" => $message->sender_id,
+                    "receiver_id" => $message->receiver_id,
+                    "created_at" => Carbon::parse($message->created_at)->timezone("Asia/Jakarta")->toDayDateTimeString()
                 ];
-            });   
+            });
+
             return $result;
         } else{
             return throw new Exception("No Message Exist");
@@ -135,17 +168,20 @@ class ApplyingJobController extends Controller
 
         $validated = $request->validate([
             "message" => "required|min:5",
-            "jobId" => "required|exists:job_listings,id"
+            "jobId" => "required|exists:job_listings,id",
+            "senderId" => "required|exists:users,id",
+            "receiverId" => "required|exists:users,id"
         ]);
 
         $result = Message::create([
             "user_id" => Auth::user()->id,
             "job_id" => $validated["jobId"],
-            "message" => $validated['message']
+            "message" => $validated["message"],
+            "sender_id" => $validated["senderId"],
+            "receiver_id" => $validated["senderId"]
         ]);
 
         if($result){
-
             $sender = User::where("id", $result["user_id"])->first();
 
             return response()->json([
@@ -154,7 +190,8 @@ class ApplyingJobController extends Controller
                 "user_id" => $sender["id"],
                 "user_name" => $sender["name"],
                 "user_avatar" => ($sender["avatar_path"]) ? $sender["avatar_path"] : "/storage/avatars/no-avatar.svg",
-                "is_user_recruiter" => $sender["is_recruiter"],
+                "sender_id" => $result["sender_id"],
+                "receiver_id" => $result["receiver_id"],
                 "created_at" => Carbon::parse($result["created_at"])->timezone("Asia/Jakarta")->toDayDateTimeString()
             ]);
         }

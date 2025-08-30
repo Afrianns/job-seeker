@@ -72,6 +72,13 @@ Route::middleware("auth")->group(function() {
         Route::get("/reported/job/{id}", [AdminController::class, "reportedJobDetail"])->name("reported-job-detail");
 
         Route::post("/company/document/status/in-review/{id}", [CompanyController::class, "updateCompanyVerificationPOST"])->name("update-status-in-review");
+        
+        // Applications 
+        Route::name("user-jobs-applications.")->group(function () {
+            Route::get("/application/jobs", [ApplyingJobController::class, "userJobsApplications"])->name("jobs");
+            Route::get("/application/applicants/{job_id}/{application_id?}", [ApplyingJobController::class, "userApplications"])->name("applicants");
+        });
+
     });
 });
 

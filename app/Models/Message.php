@@ -10,7 +10,7 @@ class Message extends Model
 {
     use HasUuids;
 
-    protected $fillable = ["message", "job_id", "user_id"];
+    protected $fillable = ["message", "job_id", "user_id", "sender_id", "receiver_id"];
 
     public function User(): BelongsTo
     {
