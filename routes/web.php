@@ -34,7 +34,10 @@ Route::middleware("auth")->group(function() {
 
     Route::get("/profile/user/cv/show", [ProfileController::class, "displayProfileCVPOST"])->name("user-cv-file");
 
+    // message method features
     Route::post("/send-message", [ApplyingJobController::class, "sendMessage"])->name("send-message");
+    Route::post("/send-edited-message", [ApplyingJobController::class, "sendEditedMessage"])->name("send-edited-message");
+    Route::post("/delete-message", [ApplyingJobController::class, "DeletedMessage"])->name("delete-message");
 
     Route::get("/job/message/{job_id}", [ApplyingJobController::class, "getMessage"]);
 

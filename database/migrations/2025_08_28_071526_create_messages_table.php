@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Application;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -18,8 +19,13 @@ return new class extends Migration
             $table->text("message");
             $table->string("sender_id");
             $table->string("receiver_id");
+            $table->boolean("is_deleted")->default(false);
+            $table->boolean("is_edited")->default(false);
+            $table->string("message_id")->nullable();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Application::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ChatEvent;
 use App\Models\Application;
 use App\Models\JobListing;
 use App\Models\Message;
@@ -138,7 +139,7 @@ class ApplyingJobController extends Controller
 
     public function getMessage(string $job_id) {
 
-        $messages = Message::with(["user"])->where("job_id", $job_id)->get();
+        $messages = Message::withTrashed()->with(["user"])->where("job_id", $job_id)->get();
 
         if($messages->count() >= 1){
             
@@ -147,13 +148,17 @@ class ApplyingJobController extends Controller
             $result = $messages->map(function($message) use ($user) {
                 return [
                     "id" => $message->id,
-                    "message" => $message->message,
+                    "message" => ($message->deleted_at) ? null : $message->message,
                     "user_id" => $message->user->id,
                     "user_name" => $message->user->name,
                     "user_avatar" => ($user["avatar_path"]) ? $user["avatar_path"] : "/storage/avatars/no-avatar.svg",
                     "sender_id" => $message->sender_id,
                     "receiver_id" => $message->receiver_id,
-                    "created_at" => Carbon::parse($message->created_at)->timezone("Asia/Jakarta")->toDayDateTimeString()
+                    "is_edited" => $message->is_edited,
+                    "is_deleted" => $message->is_deleted,
+                    "created_at" => Carbon::parse($message->created_at)->timezone("Asia/Jakarta")->toDayDateTimeString(),
+                    "updated_at" => Carbon::parse($message->updated_at)->timezone("Asia/Jakarta")->toDayDateTimeString(),
+                    "deleted_at" => ($message->deleted_at) ? Carbon::parse($message->deleted_at)->timezone("Asia/Jakarta")->toDayDateTimeString() : null
                 ];
             });
 
@@ -178,13 +183,13 @@ class ApplyingJobController extends Controller
             "job_id" => $validated["jobId"],
             "message" => $validated["message"],
             "sender_id" => $validated["senderId"],
-            "receiver_id" => $validated["senderId"]
+            "receiver_id" => $validated["receiverId"]
         ]);
 
         if($result){
             $sender = User::where("id", $result["user_id"])->first();
-
-            return response()->json([
+            
+            $rearrange_message = [
                 "id" => $result["id"],
                 "message" => $result["message"],
                 "user_id" => $sender["id"],
@@ -192,9 +197,57 @@ class ApplyingJobController extends Controller
                 "user_avatar" => ($sender["avatar_path"]) ? $sender["avatar_path"] : "/storage/avatars/no-avatar.svg",
                 "sender_id" => $result["sender_id"],
                 "receiver_id" => $result["receiver_id"],
-                "created_at" => Carbon::parse($result["created_at"])->timezone("Asia/Jakarta")->toDayDateTimeString()
-            ]);
+                "is_edited" => $result["is_edited"],
+                "is_deleted" => $result["is_deleted"],
+                "created_at" => Carbon::parse($result["created_at"])->timezone("Asia/Jakarta")->toDayDateTimeString(),
+                "updated_at" => Carbon::parse($result["updated_at"])->timezone("Asia/Jakarta")->toDayDateTimeString()
+            ];
+            broadcast(new ChatEvent($rearrange_message))->toOthers();
+
+            return response()->json($rearrange_message);
         }
+    }
+
+    public function sendEditedMessage(Request $request)
+    {
+        $validated = $request->validate([
+            "message" => "required|min:5",
+            "messageId" => "required|exists:messages,id",
+        ]);
+
+        $result = Message::where("id", $validated["messageId"])->update(["message" => $validated["message"], "is_edited" => true]);
+        
+        if($result == 1) {
+
+            $message = Message::firstWhere("id", $validated["messageId"]);
+            
+            $rearrange_message = [
+                "id" => $message->id,
+                "message" => $message->message,
+                "user_id" => $message->user->id,
+                "user_name" => $message->user->name,
+                "user_avatar" => ($message->user->avatar_path) ? $message->user->avatar_path : "/storage/avatars/no-avatar.svg",
+                "sender_id" => $message->sender_id,
+                "receiver_id" => $message->receiver_id,
+                "is_edited" => $message->is_edited,
+                "is_deleted" => $message->is_deleted,
+                "created_at" => Carbon::parse($message->created_at)->timezone("Asia/Jakarta")->toDayDateTimeString(),
+                "updated_at" => Carbon::parse($message->updated_at)->timezone("Asia/Jakarta")->toDayDateTimeString()
+            ];   
+            return $rearrange_message;
+        }
+    }
+
+    public function DeletedMessage(Request $request) 
+    {
+        $validated = $request->validate([
+            "messageId" => "required|exists:messages,id",
+        ]);
+
+        $result = Message::where("id", $validated["messageId"])->delete();
+
+        return $result;
+
     }
 }
 
