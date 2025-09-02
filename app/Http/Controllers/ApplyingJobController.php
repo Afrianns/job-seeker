@@ -137,29 +137,16 @@ class ApplyingJobController extends Controller
         ];
     }
 
+    // Message functionality 
+
     public function getMessage(string $job_id) {
 
         $messages = Message::withTrashed()->with(["user"])->where("job_id", $job_id)->get();
 
         if($messages->count() >= 1){
             
-            $user = User::where("id", $messages->first()->user_id)->first();
-            
-            $result = $messages->map(function($message) use ($user) {
-                return [
-                    "id" => $message->id,
-                    "message" => ($message->deleted_at) ? null : $message->message,
-                    "user_id" => $message->user->id,
-                    "user_name" => $message->user->name,
-                    "user_avatar" => ($user["avatar_path"]) ? $user["avatar_path"] : "/storage/avatars/no-avatar.svg",
-                    "sender_id" => $message->sender_id,
-                    "receiver_id" => $message->receiver_id,
-                    "is_edited" => $message->is_edited,
-                    "is_deleted" => $message->is_deleted,
-                    "created_at" => Carbon::parse($message->created_at)->timezone("Asia/Jakarta")->toDayDateTimeString(),
-                    "updated_at" => Carbon::parse($message->updated_at)->timezone("Asia/Jakarta")->toDayDateTimeString(),
-                    "deleted_at" => ($message->deleted_at) ? Carbon::parse($message->deleted_at)->timezone("Asia/Jakarta")->toDayDateTimeString() : null
-                ];
+            $result = $messages->map(function($message) {
+                return $this->rearrangeMessage($message);
             });
 
             return $result;
@@ -173,6 +160,8 @@ class ApplyingJobController extends Controller
 
         $validated = $request->validate([
             "message" => "required|min:5",
+            "messageId" => "exists:messages,id",
+            "appId" => "required|exists:applications,id",
             "jobId" => "required|exists:job_listings,id",
             "senderId" => "required|exists:users,id",
             "receiverId" => "required|exists:users,id"
@@ -181,30 +170,17 @@ class ApplyingJobController extends Controller
         $result = Message::create([
             "user_id" => Auth::user()->id,
             "job_id" => $validated["jobId"],
+            "application_id" => $validated["appId"],
             "message" => $validated["message"],
+            "message_id" => $validated["messageId"],
             "sender_id" => $validated["senderId"],
             "receiver_id" => $validated["receiverId"]
         ]);
 
         if($result){
-            $sender = User::where("id", $result["user_id"])->first();
-            
-            $rearrange_message = [
-                "id" => $result["id"],
-                "message" => $result["message"],
-                "user_id" => $sender["id"],
-                "user_name" => $sender["name"],
-                "user_avatar" => ($sender["avatar_path"]) ? $sender["avatar_path"] : "/storage/avatars/no-avatar.svg",
-                "sender_id" => $result["sender_id"],
-                "receiver_id" => $result["receiver_id"],
-                "is_edited" => $result["is_edited"],
-                "is_deleted" => $result["is_deleted"],
-                "created_at" => Carbon::parse($result["created_at"])->timezone("Asia/Jakarta")->toDayDateTimeString(),
-                "updated_at" => Carbon::parse($result["updated_at"])->timezone("Asia/Jakarta")->toDayDateTimeString()
-            ];
-            broadcast(new ChatEvent($rearrange_message))->toOthers();
-
-            return response()->json($rearrange_message);
+            $rearrange_message = $this->rearrangeMessage($result);
+           
+            broadcast(new ChatEvent([...$rearrange_message, "event_type" => "sending"]));
         }
     }
 
@@ -221,50 +197,47 @@ class ApplyingJobController extends Controller
 
             $message = Message::firstWhere("id", $validated["messageId"]);
             
-            $rearrange_message = [
-                "id" => $message->id,
-                "message" => $message->message,
-                "user_id" => $message->user->id,
-                "user_name" => $message->user->name,
-                "user_avatar" => ($message->user->avatar_path) ? $message->user->avatar_path : "/storage/avatars/no-avatar.svg",
-                "sender_id" => $message->sender_id,
-                "receiver_id" => $message->receiver_id,
-                "is_edited" => $message->is_edited,
-                "is_deleted" => $message->is_deleted,
-                "created_at" => Carbon::parse($message->created_at)->timezone("Asia/Jakarta")->toDayDateTimeString(),
-                "updated_at" => Carbon::parse($message->updated_at)->timezone("Asia/Jakarta")->toDayDateTimeString()
-            ];   
-            return $rearrange_message;
+            $rearrange_message = $this->rearrangeMessage($message);
+            broadcast(new ChatEvent([...$rearrange_message, "event_type" => "editing"]));
         }
     }
 
-    public function DeletedMessage(Request $request) 
+    public function DeletedMessage(Request $request)
     {
         $validated = $request->validate([
             "messageId" => "required|exists:messages,id",
         ]);
 
-        $result = Message::where("id", $validated["messageId"])->delete();
+        $row_effected = Message::where("id", $validated["messageId"])->delete();
+        
+        if($row_effected){
+            $message = Message::withTrashed()->firstWhere("id", $validated); 
 
-        return $result;
+            $rearrange_message = $this->rearrangeMessage($message);
+            broadcast(new ChatEvent([...$rearrange_message, "event_type" => "deleting"]));
+        }
 
+    }
+
+    private function rearrangeMessage($message) 
+    {
+        $rearrange_message = [
+            "id" => $message->id,
+            "message" => $message->message,
+            "user_id" => $message->user->id,
+            "user_name" => $message->user->name,
+            "user_avatar" => ($message->user->avatar_path) ? $message->user->avatar_path : "/storage/avatars/no-avatar.svg",
+            "sender_id" => $message->sender_id,
+            "message_id" => $message->message_id,
+            "receiver_id" => $message->receiver_id,
+            "is_edited" => $message->is_edited,
+            "application_id" => $message->application_id,
+            "created_at" => Carbon::parse($message->created_at)->timezone("Asia/Jakarta")->toDayDateTimeString(),
+            "updated_at" => Carbon::parse($message->updated_at)->timezone("Asia/Jakarta")->toDayDateTimeString(),
+            "deleted_at" => ($message->deleted_at) ? Carbon::parse($message->deleted_at)->timezone("Asia/Jakarta")->toDayDateTimeString() : null
+        ];
+
+        return $rearrange_message;
     }
 }
 
-
-// created_at : "2025-08-28T07:45:26.000000Z"
-// id: "0198efa3-8026-7080-84ff-a20c8d10894a"
-// message: "glad is here"
-// updated_at: "2025-08-28T07:45:26.000000Z"
-// user_id: "0198cb5e-f6f0-7055-b263-12e98dd6fa61"
-// user: 
-
-// avatar_path: null
-// company_id :null
-// created_at : "2025-08-21T06:44:15.000000Z"
-// email : "jackson@gmail.com"
-// email_verified_at : null
-// id : "0198cb5e-f6f0-7055-b263-12e98dd6fa61"
-// is_recruiter : 0
-// name : "jackson"
-// updated_at : "2025-08-21T06:44:15.000000Z"

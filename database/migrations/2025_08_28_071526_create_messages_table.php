@@ -19,7 +19,6 @@ return new class extends Migration
             $table->text("message");
             $table->string("sender_id");
             $table->string("receiver_id");
-            $table->boolean("is_deleted")->default(false);
             $table->boolean("is_edited")->default(false);
             $table->string("message_id")->nullable();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();

@@ -31,7 +31,7 @@ class ChatEvent implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('private-chat.'. $this->message["receiver_id"]),
+            new PrivateChannel('private-chat.'. $this->message["application_id"]),
         ];
     }
 }
