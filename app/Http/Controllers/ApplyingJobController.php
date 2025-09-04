@@ -39,7 +39,7 @@ class ApplyingJobController extends Controller
     // Admin application display
     public function userJobsApplications(){
         $jobs_applications = JobListing::withCount("application")->get();
-        return view("admin.jobs-applications.jobs-applications", compact("jobs_applications"));
+        return view("recruiter.jobs-applications", compact("jobs_applications"));
     }
 
     public function userApplications(string $job_id, ?string $application_id = null){
@@ -58,7 +58,7 @@ class ApplyingJobController extends Controller
         // $applications = Application::with("job")->get();
 
         $job_applications = JobListing::with("application")->where("id", $job_id)->first();
-        return view("admin.jobs-applications.applicants", compact("job_applications"), compact("selected_application"));
+        return view("recruiter.applicants", compact("job_applications"), compact("selected_application"));
     }
 
     public function applyJobPOST(Request $request) 
@@ -137,6 +137,26 @@ class ApplyingJobController extends Controller
         ];
     }
 
+
+    public function setApplicationStatus($type, $application_id) 
+    {
+        $set_status = "";
+
+        if($type == "approve"){
+            $set_status = "approved";
+        } 
+        
+        if($type == "reject"){
+            $set_status = "rejected";
+        } 
+        if ($set_status != '') {
+            Application::where("id", $application_id)->update([
+                "status" => $set_status
+            ]);
+            return redirect()->back();
+        }
+    }
+
     // Message functionality 
 
     public function getMessage(string $job_id) {
@@ -172,7 +192,7 @@ class ApplyingJobController extends Controller
             "job_id" => $validated["jobId"],
             "application_id" => $validated["appId"],
             "message" => $validated["message"],
-            "message_id" => $validated["messageId"],
+            "message_id" => $validated["messageId"] ?? null,
             "sender_id" => $validated["senderId"],
             "receiver_id" => $validated["receiverId"]
         ]);
@@ -218,6 +238,7 @@ class ApplyingJobController extends Controller
         }
 
     }
+
 
     private function rearrangeMessage($message) 
     {

@@ -23,24 +23,7 @@
                 </form>
             </div>
         </div>
-        <div>
-            <div class="border border-gray-200 px-3 py-2 flex items-center justify-between bg-white">
-                <div>
-                    <h4 class="font-medium">Your CV Document</h4>
-                    <a target="_blank" href="{{ route('user-cv-file') }}" class="text-blue-500 hover:underline hover:text-blue-800">{{ $selected_application['application']->name }}</a>
-                </div>
-                <div>
-                    <p class="border border-gray-200 py-1 px-2">
-                        Size: <strong>{{ $selected_application['application']->size }}</strong>
-                    </p>
-                    <p class="border border-gray-200 py-1 px-2">
-                        Type: <strong>{{ $selected_application['application']->type }}</strong>
-                    </p>
-                </div>
-            </div>
-            <hr class="border-t border-gray-300 mt-5 w-full">
-        </div>
-        
+        <x-chat.chat-info-document :selected-application="$selected_application"/>
         {{-- All displayed messages --}}
         <div class="h-full overflow-y-auto space-y-3 mt-auto">
             <template x-if="initialLoadLoading" x-cloak>
@@ -95,20 +78,22 @@
                                     </template>
                                 </div>
                             </div>
-                            <div class="relative inline-flex self-center items-center">
-                                <button x-on:click="openChatMenu = (openChatMenu === `drop-${message.id}`) ? '' : $nextTick(() => openChatMenu = `drop-${message.id}`)" class="flex my-auto p-2 text-sm font-medium text-center text-gray-900 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50" type="button">
-                                    <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 4 15">
-                                        <path d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
-                                    </svg>
-                                </button>
-                                <div x-show="openChatMenu == `drop-${message.id}`" @click.outside="openChatMenu = ''" class="z-10 left-0 top-10 absolute bg-white divide-gray-100 rounded-lg shadow-sm w-40">
-                                    <ul class="py-2 text-sm text-gray-700 ">
-                                        <li x-on:click="doReplyMessage(message.id)">
-                                            <a href="#" class="block px-4 py-2 hover:bg-gray-100">Reply</a>
-                                        </li>
-                                    </ul>
+                            <template x-if="!closedChat">
+                                <div class="relative inline-flex self-center items-center">
+                                    <button x-on:click="openChatMenu = (openChatMenu === `drop-${message.id}`) ? '' : $nextTick(() => openChatMenu = `drop-${message.id}`)" class="flex my-auto p-2 text-sm font-medium text-center text-gray-900 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50" type="button">
+                                        <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 4 15">
+                                            <path d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
+                                        </svg>
+                                    </button>
+                                    <div x-show="openChatMenu == `drop-${message.id}`" @click.outside="openChatMenu = ''" class="z-10 left-0 top-10 absolute bg-white divide-gray-100 rounded-lg shadow-sm w-40">
+                                        <ul class="py-2 text-sm text-gray-700 ">
+                                            <li x-on:click="doReplyMessage(message.id)">
+                                                <a href="#" class="block px-4 py-2 hover:bg-gray-100">Reply</a>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
-                            </div>
+                            </template>
                         </div>
                     </template>
                     <template x-if="message.sender_id == '{{ Auth::user()->id }}'">
@@ -157,7 +142,7 @@
                                     </template>
                                 </div>
                             </div>
-                            <template x-if="!message.deleted_at">
+                            <template x-if="!closedChat">
                                 <div class="relative inline-flex self-center items-center">
                                     <button x-on:click="openChatMenu = (openChatMenu === `drop-${message.id}`) ? '' : $nextTick(() => openChatMenu = `drop-${message.id}`)" class="flex my-auto p-2 text-sm font-medium text-center text-gray-900 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50" type="button">
                                         <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 4 15">
@@ -169,12 +154,14 @@
                                             <li x-on:click="doReplyMessage(message.id)">
                                                 <a href="#" class="block px-4 py-2 hover:bg-gray-100">Reply</a>
                                             </li>
-                                            <li x-on:click="editMessage(message.id)">
-                                                <a href="#" class="block px-4 py-2 hover:bg-gray-100">Edit</a>
-                                            </li>
-                                            <li x-on:click="deletedMessage(message.id)">
-                                                <a href="#" class="block px-4 py-2 hover:bg-gray-100">Delete</a>
-                                            </li>
+                                            <template x-if="!message.deleted_at">
+                                                <li x-on:click="editMessage(message.id)">
+                                                    <a href="#" class="block px-4 py-2 hover:bg-gray-100">Edit</a>
+                                                </li>
+                                                <li x-on:click="deletedMessage(message.id)">
+                                                    <a href="#" class="block px-4 py-2 hover:bg-gray-100">Delete</a>
+                                                </li>
+                                            </template>
                                         </ul>
                                     </div>
                                 </div>
@@ -183,15 +170,21 @@
                     </template>
                 </div>
             </template>
-{{-- end Messages --}}
+            {{-- end Messages --}}
 
             <div class="inline-flex items-center justify-center w-full relative" x-show="initialLoadErrorValue" x-cloak>
                 <hr class="border-t border-gray-300 m-5 w-full">
                 <p class="absolute bg-gray-100 px-3 text-center text-gray-600 text-md" x-text="initialLoadErrorValue"></p>
             </div>
         </div>
+        {{-- if closedChat true --}}
+        @if ($selected_application["application"]->status == "rejected" && !Auth::user()->is_recruiter)
+            <div class="bg-red-200 w-full p-2 text-center border border-red-500">
+                <h3 class="py-3 text-red-600">Sorry, Application was Rejected</h3>
+            </div>
+        @endif
         {{-- Form for Sent and Reply Message --}}
-        <template x-if="!showPopupEdit">
+        <template x-if="!showPopupEdit && !closedChat">
             <div>
                 <template x-if="replyMessage && Object.keys(replyMessage).length > 0">
                     <div class="bg-white rounded-lg p-3 mb-2">
@@ -267,6 +260,7 @@
             initialLoadLoading: false,
 
             showPopupEdit: false,
+            closedChat: "{{ ($selected_application != null && $selected_application['application']->status == 'rejected') ? true : false }}",
             selectedForEdit: [],
 
             initialize(){

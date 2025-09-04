@@ -1,19 +1,21 @@
 <?php
 
-namespace App\View\Components;
+namespace App\View\Components\chat;
 
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-class modalConfirm extends Component
+class chatInfoDocument extends Component
 {
     /**
      * Create a new component instance.
      */
-    public function __construct()
+    public $selected_application;
+
+    public function __construct(array $selectedApplication)
     {
-        //
+        $this->selected_application = $selectedApplication;
     }
 
     /**
@@ -21,6 +23,6 @@ class modalConfirm extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.modal-confirm');
+        return view('components.chat.chat-info-document');
     }
 }

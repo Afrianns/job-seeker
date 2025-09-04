@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string("name");
             $table->string("size");
             $table->string("type");
-            $table->enum("status", ["waiting","under-review", "approved", "rejected"])->default("waiting");
+            $table->enum("status", ["waiting","approved", "rejected"])->default("waiting");
             $table->text("rejected_reason")->nullable();
             $table->string("cv_path");
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
