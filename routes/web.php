@@ -100,3 +100,7 @@ Route::middleware('guest')->group(function () {
 });
 
 
+
+Route::fallback(function(){
+    return redirect()->route("home");
+});
