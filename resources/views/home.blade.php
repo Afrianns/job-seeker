@@ -17,8 +17,16 @@
                     @endphp
                     @foreach ($jobs as $job)
                         <div class="py-3 px-5 bg-white border border-gray-300 rounded-md w-full space-y-5">
-
-                            <h2 class="text-2xl font-medium mt-5">{{ $job->title }}</h2>
+                            <div class="flex justify-between items-center">
+                                <h2 class="text-2xl font-medium mt-5">{{ $job->title }}</h2>
+                                @if (Auth::check() && !Auth::user()->is_recruiter && Auth::user()->application()->exists())
+                                    @if (Auth::user()->id == $job->application->first()->user_id)
+                                        <div class="bg-green-100 py-1 px-4 rounded-lg">
+                                            <span class="text-green-500 hover:text-green-700 hover:underline">{{ Str::title($job->application->first()->status) }}</span>
+                                        </div>
+                                    @endif
+                                @endif
+                            </div>
                             <div class="flex gap-x-2 items-center">
                                 <img src="{{ $company->logo_path ?? '/storage/companies_logo/no-logo.png' }}" class="w-10 h-10 bg-red-50 rounded-full" alt="company logo image">
                                 <div class="flex flex-col">

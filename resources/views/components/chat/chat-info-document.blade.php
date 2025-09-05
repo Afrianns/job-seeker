@@ -1,4 +1,5 @@
 <div>
+
     <div class="border border-gray-200 px-3 py-2 flex items-center justify-between bg-white">
         <div>
             @if (Auth::user()->is_recruiter)
@@ -24,8 +25,14 @@
                 <p class="bg-gray-50 rounded-md w-full py-3 text-center cursor-pointer hover:bg-gray-100 border border-gray-300" data-modal-target="popup-modal-approve" data-modal-toggle="popup-modal-approve">Accept</p>
                 <p class="bg-red-50 rounded-md w-full py-3 text-center cursor-pointer hover:bg-red-100 border border-red-300 text-red-500" data-modal-target="popup-modal-reject" data-modal-toggle="popup-modal-reject">Reject</p>
             @else
-                <p class="bg-red-50 rounded-md w-full py-3 text-center text-red-500 border border-red-300" data-modal-target="popup-modal-reject" data-modal-toggle="popup-modal-reject">{{ Str::title($selected_application["application"]->status) }}</p>
+                <p data-modal-target="popup-modal-reject" @class(['rounded-md w-full py-3 text-center border', 'bg-red-50 text-red-500 border-red-300' => $selected_application["application"]->status == "rejected", 'bg-green-50 text-green-500 border-green-300' => $selected_application["application"]->status == "approved"]) data-modal-toggle="popup-modal-reject">{{ Str::title($selected_application["application"]->status) }}</p>
             @endif
+        </div>
+    @endif
+    {{-- if accepted --}}
+    @if ($selected_application["application"]->status == "approved" && !Auth::user()->is_recruiter)
+        <div class="bg-green-100 w-full p-2 text-center border border-green-500 mt-3">
+            <h3 class="text-green-600">Congrat, Your application was approved</h3>
         </div>
     @endif
     <hr class="border-t border-gray-300 mt-5 w-full">

@@ -183,6 +183,7 @@
                 <h3 class="py-3 text-red-600">Sorry, Application was Rejected</h3>
             </div>
         @endif
+
         {{-- Form for Sent and Reply Message --}}
         <template x-if="!showPopupEdit && !closedChat">
             <div>
