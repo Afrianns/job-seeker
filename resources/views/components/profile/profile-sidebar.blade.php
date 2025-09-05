@@ -1,4 +1,4 @@
-<section class="sticky top-5 h-fit text-gray-900 bg-white border border-gray-300 rounded-lg">
+<section class="sticky top-5 h-fit text-gray-900 bg-white border border-gray-300 rounded-lg max-w-[400px] w-full">
     <a href="{{ route('profile') }}" type="button" @class(["relative inline-flex items-center w-full px-8 py-5 text-md font-medium border-b border-gray-200 hover:bg-gray-100 hover:text-purple-700 focus:z-10 focus:ring-2 focus:ring-purple-700 focus:text-purple-700", "bg-gray-100 text-purple-700" => request()->routeIs("profile")])>
         <svg class="w-5 h-5 me-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><g fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"><path d="M16 9a4 4 0 1 1-8 0a4 4 0 0 1 8 0m-2 0a2 2 0 1 1-4 0a2 2 0 0 1 4 0"/><path d="M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11s11-4.925 11-11S18.075 1 12 1M3 12c0 2.09.713 4.014 1.908 5.542A8.99 8.99 0 0 1 12.065 14a8.98 8.98 0 0 1 7.092 3.458A9 9 0 1 0 3 12m9 9a8.96 8.96 0 0 1-5.672-2.012A6.99 6.99 0 0 1 12.065 16a6.99 6.99 0 0 1 5.689 2.92A8.96 8.96 0 0 1 12 21"/></g></svg>
         Profile
@@ -15,7 +15,7 @@
     @endif
     <form action="/logout" method="post">
         @csrf
-        <button type="submit" class="relative inline-flex items-center w-full px-8 py-5 text-md font-medium border-b border-red-200 hover:bg-red-100 hover:text-red-700 focus:z-10 focus:ring-2 focus:ring-red-700 focus:text-red-700">
+        <button type="submit" class="relative inline-flex items-center w-full px-8 py-5 text-md font-medium border-b border-red-200 hover:bg-red-100 hover:text-red-700 focus:z-10 focus:ring-2 focus:ring-red-700 focus:text-red-700 cursor-pointer">
             <svg class="w-5 h-5 me-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M5 22a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v3h-2V4H6v16h12v-2h2v3a1 1 0 0 1-1 1zm13-6v-3h-7v-2h7V8l5 4z"/></svg>
             Logout
         </button>

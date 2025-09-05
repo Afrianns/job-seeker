@@ -45,7 +45,7 @@
                             </div>
                             <div class="flex justify-between items-center">
                                 <a href="detail/{{ $job->id }}" type="button" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2">Detail</a>
-                                @if (Auth::check() && !Auth::user()->is_recruiter && $job->application()->exists())
+                                @if (Auth::check() && !Auth::user()->is_recruiter && Auth::user()->application()->exists())
                                     @if (Auth::user()->id == $job->application->first()->user_id)
                                         <div class="bg-blue-100 py-1 px-4 rounded-lg">
                                             <span class="text-blue-500 hover:text-blue-700 hover:underline">Applied on {{ Carbon\Carbon::create($job->application->first()->created_at)->toDayDateTimeString() }}</span>

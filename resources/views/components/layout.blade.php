@@ -34,7 +34,7 @@
                         @else
                             <li class="hover:underline cursor-pointer"><a href="{{ route('my-application') }}" class="{{ request()->routeIs('my-application') ? 'underline' : '' }}">My Applications</a></li>
                         @endif
-                        <li class="hover:underline cursor-pointer"><a href="{{ route('profile') }}" class="{{ request()->routeIs('profile') ? 'underline' : '' }}">Profile</a></li>
+                        <li class="hover:underline cursor-pointer font-bold text-lg"><a href="{{ route('profile') }}" class="{{ request()->routeIs('profile') ? 'underline' : '' }}">{{ Str::title(Auth::user()->name) }}</a></li>
                     </ul>
                 @endauth
                 @guest

@@ -78,7 +78,7 @@ class JobListingController extends Controller
         if(isset($id)){
             $job = JobListing::with(["company","company.verification", "application" => function ($q) {
                 if(Auth::check()){
-                    $q->where("user_id", Auth::user()->id);
+                    return $q->where("user_id", Auth::user()->id);
                 }
             }])->where("id", $id)->first();
             

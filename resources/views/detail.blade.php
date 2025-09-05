@@ -46,7 +46,7 @@
         @endguest
 
         @if(Auth::check())
-            @if (!Auth::user()->is_recruiter && $job->application()->exists())
+            @if (!Auth::user()->is_recruiter && Auth::user()->application()->exists())
                 @if (Auth::user()->id == $job->application->first()->user_id)
                     <div class="px-5">
                         <span class="text-blue-500 hover:text-blue-700 hover:underline">Applied on {{ Carbon\Carbon::create($job->application->first()->created_at)->toDayDateTimeString() }}</span>
@@ -59,8 +59,8 @@
                     @if (Auth::check() && Auth::user()->is_recruiter)
                         <button type="button" id="edit_button" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2" x-on:click="editing = !editing" x-text="editing ? 'Done':'Edit'" x-cloak></button>
                     @else
-                        @if ($job->application()->exists() && Auth::user()->id == $job->application->first()->user_id)
-                            <button type="button" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900">Check application status</button>
+                        @if ($job->application()->exists() && Auth::user()->application()->exists())
+                            <a href="{{ route('my-application', ['id' => $job->application->first()->id]) }}" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900 cursor-pointer">Check application status</a>
                         @else
                             <button data-modal-target="static-modal" data-modal-toggle="static-modal"  type="button" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900">Apply</button>
                         @endif
@@ -136,7 +136,9 @@
                                             <p class="text-base leading-relaxed text-gray-500 mb-5">
                                                 Using your profile CV.
                                             </p>
-                                            <x-display-file></x-display-file>
+                                            @if (Auth::user()->documentCV()->exists())
+                                                <x-display-file></x-display-file>
+                                            @endif
                                             <span x-on:click="useUploadCV" class="cursor-pointer mt-5 block text-red-500 hover:underline hover:text-red-800 text-right">Change CV</span>
                                         </div>
                                     </template>

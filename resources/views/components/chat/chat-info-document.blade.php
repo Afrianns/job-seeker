@@ -20,10 +20,10 @@
 
     @if (Auth::user()->is_recruiter)
         <div class="bg-white w-full py-2 px-3 flex justify-around items-center gap-x-2">
-            @if ($selected_application["application"]->status != ("rejected" || "accepted"))
+            @if ($selected_application["application"]->status == "waiting")
                 <p class="bg-gray-50 rounded-md w-full py-3 text-center cursor-pointer hover:bg-gray-100 border border-gray-300" data-modal-target="popup-modal-approve" data-modal-toggle="popup-modal-approve">Accept</p>
                 <p class="bg-red-50 rounded-md w-full py-3 text-center cursor-pointer hover:bg-red-100 border border-red-300 text-red-500" data-modal-target="popup-modal-reject" data-modal-toggle="popup-modal-reject">Reject</p>
-                @else
+            @else
                 <p class="bg-red-50 rounded-md w-full py-3 text-center text-red-500 border border-red-300" data-modal-target="popup-modal-reject" data-modal-toggle="popup-modal-reject">{{ Str::title($selected_application["application"]->status) }}</p>
             @endif
         </div>

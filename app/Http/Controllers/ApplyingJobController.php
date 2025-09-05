@@ -39,7 +39,8 @@ class ApplyingJobController extends Controller
     // Admin application display
     public function userJobsApplications(){
         $jobs_applications = JobListing::withCount("application")->get();
-        return view("recruiter.jobs-applications", compact("jobs_applications"));
+        $total_applications = Application::exists();
+        return view("recruiter.jobs-applications", compact("jobs_applications"), compact("total_applications"));
     }
 
     public function userApplications(string $job_id, ?string $application_id = null){

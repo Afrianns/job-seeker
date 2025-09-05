@@ -79,7 +79,7 @@ Route::middleware("auth")->group(function() {
         // Applications 
         Route::name("user-jobs-applications.")->group(function () {
             Route::get("/application/jobs", [ApplyingJobController::class, "userJobsApplications"])->name("jobs");
-            Route::get("/application/applicants/{job_id}/{application_id?}", [ApplyingJobController::class, "userApplications"])->name("applicants");
+            Route::get("/application/applicants/u,{job_id}/{application_id?}", [ApplyingJobController::class, "userApplications"])->name("applicants");
 
             Route::post("set-applicants-status/{type}/{application_id}",[ApplyingJobController::class, "setApplicationStatus"])->name("set-status");
         });
