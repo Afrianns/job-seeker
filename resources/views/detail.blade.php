@@ -7,7 +7,7 @@
             <a href="/" type="button" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-5 block w-fit">Back</a>
             <div class="flex justify-between items-center">
                 <h1 class="text-2xl font-medium">{{ $job->title }}</h1>
-                @if (Auth::check() && !Auth::user()->is_recruiter || !Auth::check())
+                @if (Auth::check() && !Auth::user()->is_recruiter || !Auth::check() && !Auth::guard("admin")->check())
                     <a href="/" type="button" class="cursor-pointer text-red-500 hover:text-red-700 hover:underline font-medium rounded-lg text-sm">Report this job!</a>
                 @endif
             </div>
@@ -38,11 +38,17 @@
         </div>
 
         @guest
-            
-            <div class="inline-flex items-center justify-center w-full">
-                <hr class="border-t border-gray-300 m-5 w-full">
-                <p class="absolute bg-[#f1f1ed] px-3 text-center text-gray-600 text-md">You need to <a class="text-purple-500 hover:text-purple-800 underline hover:no-underline" href="{{ route('login') }}">login</a> or <a class="text-purple-500 hover:text-purple-800 underline hover:no-underline" href="{{ route('register') }}">create account</a></p>
-            </div>
+            @if (Auth::guard("admin")->check())
+                <div class="inline-flex items-center justify-center w-full">
+                    <hr class="border-t border-gray-300 m-5 w-full">
+                    <p class="absolute bg-[#f1f1ed] px-3 text-center text-gray-600 text-md">Admin cannot apply fo a job. admin already has a job</p>
+                </div>
+            @else
+                <div class="inline-flex items-center justify-center w-full">
+                    <hr class="border-t border-gray-300 m-5 w-full">
+                    <p class="absolute bg-[#f1f1ed] px-3 text-center text-gray-600 text-md">You need to <a class="text-purple-500 hover:text-purple-800 underline hover:no-underline" href="{{ route('login') }}">login</a> or <a class="text-purple-500 hover:text-purple-800 underline hover:no-underline" href="{{ route('register') }}">create account</a></p>
+                </div>
+            @endif
         @endguest
 
         @if(Auth::check())

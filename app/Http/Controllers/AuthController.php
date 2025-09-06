@@ -24,6 +24,10 @@ class AuthController extends Controller
         return view("auth.recruiter-register");
     }
 
+    public function admin() {
+        return view("auth.admin-login");
+    }
+
     public function registerPOST(Request $request){
 
         $validated = $request->validate([
@@ -73,6 +77,19 @@ class AuthController extends Controller
         User::create([...$validated_recruiter,"is_recruiter" => true, "company_id" => $company->id]);
         
         return redirect("/login")->with("success", "Successfully register as recruiter!");
+    }
+
+    public function adminLoginPOST(Request $request){
+        $validated = $request->validate([
+            "email" => "required|min:5|email:rfc.dns",
+            "password" => "required|min:10",
+        ]);
+
+        if (Auth::guard('admin')->attempt(['email' => $validated["email"], 'password' => $validated["password"]])) {
+            return redirect("/admin")->with("success", "Successfully admin login!");
+        }
+
+        dd($validated);
     }
 
     public function logout(Request $request){

@@ -9,6 +9,7 @@
             </li>
         </ul>
     </div>
+    {{Auth::guard('admin')->user() }}
     <div x-data="inReviewFunction"  id="main">
         <h2 class="title-style">Companies Document In Review</h2>
         <div class="relative overflow-x-auto sm:rounded-lg my-5">

@@ -21,9 +21,12 @@
                     <h1 class="text-2xl font-bold">Recreeti</h1>
                     @auth
                         @if (Auth::user()->is_recruiter)
-                            <span class="bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-gray-300">Recruiter</span>
+                            <span class="bg-purple-200 text-purple-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm">Recruiter</span>
                         @endif
                     @endauth
+                    @if (Auth::guard("admin")->check())
+                        <span class="bg-gray-200 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm">admin</span>
+                    @endif
                 </a>
                 @auth
                     <ul class="flex gap-x-2 items-center">
@@ -38,9 +41,13 @@
                     </ul>
                 @endauth
                 @guest
-                    <ul class="flex gap-x-2 items-center">
-                        <li class="hover:underline cursor-pointer"><a href="{{ route('register') }}" class="{{ request()->routeIs('register') ? 'underline' : '' }}">Register</a></li>
-                        <li class="hover:underline cursor-pointer"><a href="{{ route('login') }}" class="{{ request()->routeIs('login') ? 'underline' : '' }}">Login</a></li>
+                <ul class="flex gap-x-2 items-center">
+                        @if (Auth::guard("admin")->check())
+                            <li class="hover:underline font-medium text-lg">{{ Auth::guard('admin')->user()->email }}</li>
+                        @else
+                            <li class="hover:underline cursor-pointer"><a href="{{ route('register') }}" class="{{ request()->routeIs('register') ? 'underline' : '' }}">Register</a></li>
+                            <li class="hover:underline cursor-pointer"><a href="{{ route('login') }}" class="{{ request()->routeIs('login') ? 'underline' : '' }}">Login</a></li>
+                        @endif
                     </ul>
                 @endguest
             </div>

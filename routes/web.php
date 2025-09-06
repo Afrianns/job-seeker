@@ -6,7 +6,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\ProfileController;
-
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\userMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [JobListingController::class,"index"])->name("home");
@@ -57,38 +58,36 @@ Route::middleware("auth")->group(function() {
         
         Route::get("/profile/company/verification/document/show", [CompanyController::class, "getCompanyVerificationDocument"])->name("company-verification-file");
     });
+});
 
-    Route::prefix("admin")->group(function() { 
-        Route::get("/", fn () => redirect("admin/company/document/verification"));
-        Route::get("/category", [AdminController::class, "category"])->name("category");
+Route::prefix("admin")->middleware(AdminMiddleware::class)->group(function() { 
+    Route::get("/", fn () => redirect("admin/company/document/verification"));
+    Route::get("/category", [AdminController::class, "category"])->name("category");
 
-        Route::post("/company/document/verification", [AdminController::class, "companyDocumentInReviewPOST"])->name("verification-in-review-post");
-        Route::get("/company/document/verification", [AdminController::class, "companyDocumentInReview"])->name("verification-in-review");
+    Route::post("/company/document/verification", [AdminController::class, "companyDocumentInReviewPOST"])->name("verification-in-review-post");
+    Route::get("/company/document/verification", [AdminController::class, "companyDocumentInReview"])->name("verification-in-review");
 
-        Route::post("/company/document/submission", [AdminController::class, "companyDocumentSubmissionPOST"])->name("verification-submission-post");
-        Route::get("/company/document/submission", [AdminController::class, "companyDocumentSubmission"])->name("verification-submission");
+    Route::post("/company/document/submission", [AdminController::class, "companyDocumentSubmissionPOST"])->name("verification-submission-post");
+    Route::get("/company/document/submission", [AdminController::class, "companyDocumentSubmission"])->name("verification-submission");
 
-        Route::get("/reported", [AdminController::class, "reportedJobs"])->name("reported-jobs");
+    Route::get("/reported", [AdminController::class, "reportedJobs"])->name("reported-jobs");
 
-        Route::get("/company/{id}", [AdminController::class, "companyDetail"])->name("company-detail");
+    Route::get("/company/{id}", [AdminController::class, "companyDetail"])->name("company-detail");
 
-        Route::get("/reported/job/{id}", [AdminController::class, "reportedJobDetail"])->name("reported-job-detail");
+    Route::get("/reported/job/{id}", [AdminController::class, "reportedJobDetail"])->name("reported-job-detail");
 
-        Route::post("/company/document/status/in-review/{id}", [CompanyController::class, "updateCompanyVerificationPOST"])->name("update-status-in-review");
-        
-        // Applications 
-        Route::name("user-jobs-applications.")->group(function () {
-            Route::get("/application/jobs", [ApplyingJobController::class, "userJobsApplications"])->name("jobs");
-            Route::get("/application/applicants/u,{job_id}/{application_id?}", [ApplyingJobController::class, "userApplications"])->name("applicants");
+    Route::post("/company/document/status/in-review/{id}", [CompanyController::class, "updateCompanyVerificationPOST"])->name("update-status-in-review");
+    
+    // Applications 
+    Route::name("user-jobs-applications.")->group(function () {
+        Route::get("/application/jobs", [ApplyingJobController::class, "userJobsApplications"])->name("jobs");
+        Route::get("/application/applicants/u,{job_id}/{application_id?}", [ApplyingJobController::class, "userApplications"])->name("applicants");
 
-            Route::post("set-applicants-status/{type}/{application_id}",[ApplyingJobController::class, "setApplicationStatus"])->name("set-status");
-        });
-
+        Route::post("set-applicants-status/{type}/{application_id}",[ApplyingJobController::class, "setApplicationStatus"])->name("set-status");
     });
 });
 
-
-Route::middleware('guest')->group(function () {
+Route::middleware(userMiddleware::class)->group(function () {
     Route::get("/login", [AuthController::class,"login"])->name("login");
     Route::get("/register", [AuthController::class,"register"])->name("register");
 
@@ -97,6 +96,10 @@ Route::middleware('guest')->group(function () {
     
     Route::post("/auth/recruiter-register",[AuthController::class, "recruiterRegisterPOST"]);
     Route::get("/recruiter-register",[AuthController::class, "recruiterRegister"]);
+
+    // Admin Login
+    Route::get("/admin/login", [AuthController::class, "admin"]);
+    Route::post("/auth/admin/login",[AuthController::class, "adminLoginPOST"]);
 });
 
 
