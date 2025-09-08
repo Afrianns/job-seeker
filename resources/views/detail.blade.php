@@ -11,19 +11,7 @@
                     <a href="/" type="button" class="cursor-pointer text-red-500 hover:text-red-700 hover:underline font-medium rounded-lg text-sm">Report this job!</a>
                 @endif
             </div>
-            <div class="flex gap-x-2 items-center">
-                <img src="{{ $company->logo_path ?? '/storage/companies_logo/no-logo.png' }}" class="w-10 h-10 bg-red-50 rounded-full" alt="company logo image">          
-                <div class="flex flex-col">
-                    <a href="{{ route('company', ['id' => $job->company->id]) }}" class="hover:underline">{{ $job->company->name }}</a>
-                    @if ($job->company->verification()->exists())
-                        @if ($job->company->verification->status == "approved")
-                            <span class="text-xs text-gray-500">verified</span>
-                        @endif
-                    @else
-                        <span class="text-xs text-gray-500">not verified</span>
-                    @endif
-                </div>
-            </div>
+            <x-company-small-info :job="$job" />
                 <ul class="flex gap-x-2 items-center">
                     <li class="text-gray-500">Displayed {{ Carbon\Carbon::now()->parse($job->created_at)->diffForHumans() }}</li>
                     <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
@@ -62,22 +50,26 @@
 
             <div class="px-5 flex justify-between items-center mt-5">
                 <div class="flex items-center gap-x-2">
-                    @if (Auth::check() && Auth::user()->is_recruiter)
-                        <button type="button" id="edit_button" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2" x-on:click="editing = !editing" x-text="editing ? 'Done':'Edit'" x-cloak></button>
-                    @else
-                        @if ($job->application()->exists() && Auth::user()->application()->exists())
-                            <a href="{{ route('my-application', ['id' => $job->application->first()->id]) }}" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900 cursor-pointer">Check application status</a>
+                    @if (Auth::check())
+                        @if (Auth::user()->is_recruiter && Auth::user()->company->id == $job->company->id)
+                            <button type="button" id="edit_button" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2" x-on:click="editing = !editing" x-text="editing ? 'Done':'Edit'" x-cloak></button>
+                        @elseif(Auth::user()->is_recruiter)
+                            <p class="text-gray-400 font-medium italic">Recruiter cannot apply</p>
                         @else
-                            <button data-modal-target="static-modal" data-modal-toggle="static-modal"  type="button" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900">Apply</button>
+                            @if ($job->application()->exists() && Auth::user()->application()->exists())
+                                <a href="{{ route('my-application', ['id' => $job->application->first()->id]) }}" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900 cursor-pointer">Check application status</a>
+                            @else
+                                <button data-modal-target="static-modal" data-modal-toggle="static-modal"  type="button" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900">Apply</button>
+                            @endif
                         @endif
                     @endif
                 </div>
-                @if (Auth::user()->is_recruiter)
+                @if (Auth::user()->is_recruiter && Auth::user()->company->id == $job->company->id)
                     <button type="button" data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Delete</button>
                 @endif
             </div>
             <hr class="border-t border-gray-300 m-5">
-            @if (Auth::user()->is_recruiter)         
+            @if (Auth::user()->is_recruiter && Auth::user()->company->id == $job->company->id) 
                 <div class="px-5" id="edit_form" x-show="editing" x-cloak>
                     <form method="POST" action="/job/update/{{ $job->id }}">
                         <h1 class="my-5 text-2xl">Update Job</h1>

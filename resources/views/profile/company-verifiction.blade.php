@@ -28,7 +28,7 @@
                     <div class="border border-gray-200 px-3 py-2 flex items-center justify-between">
                         <div>
                             <h4 class="font-medium">Company Document</h4>
-                            <a href="{{ route('company-verification-file', basename($company->verification->document_path)) }}" class="text-blue-500 hover:underline hover:text-blue-800">{{ $company->verification->name }}</a>
+                            <a href="{{ route('company-verification-file', ['verification_id'=> $company->verification->id]) }}" class="text-blue-500 hover:underline hover:text-blue-800">{{ $company->verification->name }}</a>
                         </div>
                         <div>
                             <p class="border border-gray-200 py-1 px-2">
@@ -40,9 +40,9 @@
                         </div>
                     </div>
                     <p class="border border-gray-200 py-1 px-2">Status: 
-                    <span class="bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm dark:bg-gray-700 dark:text-gray-300">{{ $company->verification->status }}</span>    
+                    <span @class(['text-xs font-medium me-2 px-2.5 py-0.5 rounded-sm', 'bg-gray-200 text-gray-800 ' => $company->verification->status == "waiting" || "in-review", 'bg-green-200 text-green-800 ' => $company->verification->status == "approved",'bg-red-200 text-red-800 ' => $company->verification->status == "rejected"])>{{ $company->verification->status }}</span>    
                     </p>
-                    @if ($company->verification->status == "waiting")
+                    @if ($company->verification->status == ("waiting" | "rejected"))
                         <a href="#" class="mt-5 text-red-500 hover:underline hover:text-red-800 text-right">Delete</a>
                     @endif
                 </div>

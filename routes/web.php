@@ -56,9 +56,17 @@ Route::middleware("auth")->group(function() {
         Route::patch("/company/update/{id}", [CompanyController::class, "updateCompanyProfilePOST"]);
         Route::get("/profile/company/verification", [CompanyController::class, "companyVerificationInfo"])->name("company-verification-info");
         
-        Route::get("/profile/company/verification/document/show", [CompanyController::class, "getCompanyVerificationDocument"])->name("company-verification-file");
+        // Applications 
+        Route::name("user-jobs-applications.")->group(function () {
+            Route::get("/recruiter/application/jobs", [ApplyingJobController::class, "userJobsApplications"])->name("jobs");
+            Route::get("/recruiter/application/applicants/{job_id}/{application_id?}", [ApplyingJobController::class, "userApplications"])->name("applicants");
+
+            Route::post("set-applicants-status/{type}/{application_id}",[ApplyingJobController::class, "setApplicationStatus"])->name("set-status");
+        });
     });
 });
+
+Route::get("/profile/company/verification/document/show/{verification_id}", [CompanyController::class, "getCompanyVerificationDocument"])->name("company-verification-file")->middleware("adminOrRecruiter");
 
 Route::prefix("admin")->middleware(AdminMiddleware::class)->group(function() { 
     Route::get("/", fn () => redirect("admin/company/document/verification"));
@@ -77,14 +85,7 @@ Route::prefix("admin")->middleware(AdminMiddleware::class)->group(function() {
     Route::get("/reported/job/{id}", [AdminController::class, "reportedJobDetail"])->name("reported-job-detail");
 
     Route::post("/company/document/status/in-review/{id}", [CompanyController::class, "updateCompanyVerificationPOST"])->name("update-status-in-review");
-    
-    // Applications 
-    Route::name("user-jobs-applications.")->group(function () {
-        Route::get("/application/jobs", [ApplyingJobController::class, "userJobsApplications"])->name("jobs");
-        Route::get("/application/applicants/u,{job_id}/{application_id?}", [ApplyingJobController::class, "userApplications"])->name("applicants");
 
-        Route::post("set-applicants-status/{type}/{application_id}",[ApplyingJobController::class, "setApplicationStatus"])->name("set-status");
-    });
 });
 
 Route::middleware(userMiddleware::class)->group(function () {

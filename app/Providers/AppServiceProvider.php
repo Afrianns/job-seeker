@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Admin;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -27,5 +28,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('is_a_recruiter', function (User $user) {
             return $user->is_recruiter == true;
         });
+
+        // Gate::define("access_admin_recruiter", function(Admin $user) {
+        //     return Auth::user()->id == $user->id;
+        // });
     }
 }

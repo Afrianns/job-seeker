@@ -21,7 +21,6 @@ class ApplyingJobController extends Controller
     public function myApplication(?string $id = null)
     {
         $selected_application = null;
-        
         if(isset($id)){
             $application = Application::with("job", "job.company")->where("user_id", Auth::user()->id)->firstWhere("id", $id);
         
@@ -38,8 +37,19 @@ class ApplyingJobController extends Controller
 
     // Admin application display
     public function userJobsApplications(){
-        $jobs_applications = JobListing::withCount("application")->get();
-        $total_applications = Application::exists();
+        $jobs_applications = JobListing::withCount("application")->where("company_id", Auth::user()->company->id)->get();
+        
+        $total_applications = false;
+        $count_applications = 0;
+        
+        foreach ($jobs_applications as $key => $value) {
+            $count_applications += $value->application_count;
+        }
+
+        if($count_applications > 0){
+            $total_applications = true;
+        }
+
         return view("recruiter.jobs-applications", compact("jobs_applications"), compact("total_applications"));
     }
 

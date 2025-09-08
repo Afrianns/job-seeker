@@ -38,7 +38,7 @@ class AdminController extends Controller
     }
 
     public function companyDocumentInReview() {
-        $companies_document = Company::with("verification")->whereHas("verification", fn ($q) => $q->where("status", "!=", "waiting"))->get();
+        $companies_document = Company::with("verification")->whereHas("verification", fn ($q) => $q->where("status", "in-review"))->get();
         return view("admin.company-verification-in-review", compact('companies_document'));
     }
 
@@ -49,9 +49,16 @@ class AdminController extends Controller
             "type" => ["required", Rule::in(["rejected", "approved"])]
         ]);
 
-        $res = Company::where("id", $validated['id'])->first();
+        // $res = Company::where("id", $validated['id'])->first();
 
-        dd($validated, $res->name);
+        $res = CompanyVerification::where("company_id", $validated["id"])->update([
+            "status" => $validated["type"]
+        ]);
+
+        if($res){
+            return redirect("/");
+        }
+        dd($validated, $res);
     }
 
     public function companyDetail(string $id) {

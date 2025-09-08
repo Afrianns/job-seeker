@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class Recruiter
+class AdminOrRecruiterMiddleware
 {
     /**
      * Handle an incoming request.
@@ -16,9 +16,10 @@ class Recruiter
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(Auth::check() && !Auth::user()->is_recruiter){
-            return redirect("/profile");
+        if(Auth::check() && !Auth::user()->is_recruiter || !Auth::check() && !Auth::guard("admin")->check()){
+            return redirect("/");
         }
+
         return $next($request);
     }
 }

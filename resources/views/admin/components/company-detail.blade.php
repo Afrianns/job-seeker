@@ -47,7 +47,7 @@
                 <h3 class="text-xl my-3">Document for Verifying Company</h3>
                 <div class="flex justify-between items-center">
                     <p class="font-bold">Document Verification</p>
-                    <a href="{{ route('company-verification-file') }}" class="hover:underline text-blue-500">
+                    <a href="{{ route('company-verification-file', ['verification_id' => $company->verification->id]) }}" class="hover:underline text-blue-500">
                         {{ $company->verification->name }}
                     </a>
                 </div>

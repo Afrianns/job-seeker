@@ -59,12 +59,9 @@ class CompanyController extends Controller
        
     }
     
-    public function getCompanyVerificationDocument(){
-        if(!Gate::allows("is_a_recruiter")){
-            return redirect("/profile");
-        }
+    public function getCompanyVerificationDocument(string $id){
 
-        $verification = CompanyVerification::where("company_id", Auth::user()->company_id)->first();
+        $verification = CompanyVerification::where("id", $id)->first();
 
         $file_exist = Storage::exists($verification->document_path);
 
@@ -130,7 +127,7 @@ class CompanyController extends Controller
         
         if(isset($validated_company["facebook_company_link"]) || isset($validated_company["instagram_company_link"]) || isset($validated_company["twitter_company_link"]) || isset($validated_company["website_company_link"])){
             
-            $company_links = CompanyLink::upsert([
+            CompanyLink::upsert([
                 [
                     "facebook_link" => $validated_company["facebook_company_link"],
                     "instagram_link" => $validated_company["instagram_company_link"],
