@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\JobListing;
 use App\Models\JobTag;
 use App\Models\Tag;
-use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -98,7 +97,6 @@ class JobListingController extends Controller
 
     public function updateJob(Request $request, string $id) {
 
-
         $newly_tag_by_user = [];
         $tag_already_exist_in_db = [];
 
@@ -116,16 +114,20 @@ class JobListingController extends Controller
                 $tags = Arr::map(array_merge($tag_already_exist_in_db, $newly_tag_by_user), function (string $tag) use ($id) {
                     return ["tag_id" => $tag, "job_listing_id" => $id];
                 });
-                
             }
             
             
             $job_tags = JobTag::where("job_listing_id", $id);
+            $previous_tags_id = [];
            
             // delete job tag that relate to id
             if($job_tags->count() >= 1){
+                $previous_tags_id = $job_tags->pluck("tag_id")->toArray();
                 $job_tags->delete();
             }
+
+            $this->countTotalUsedTags($previous_tags_id, $tag_already_exist_in_db);
+
 
             // add job tag to DB if user input tag
             if(count($tags) >= 1){
@@ -180,8 +182,9 @@ class JobListingController extends Controller
     
     // store all newly tags didnt exist in db and get all those tags id
     private function getNewlyTagToDB($newly_tag_by_user){
-        $newly_tag_by_user_mapped = Arr::map($newly_tag_by_user, function (string $value) {
-            return ["name" => $value];
+        $company_id = Auth::user()->company->id;
+        $newly_tag_by_user_mapped = Arr::map($newly_tag_by_user, function (string $value) use ($company_id) {
+            return ["name" => $value, "total_used" => 1, "company_id" => $company_id];
         });
         
         Tag::upsert($newly_tag_by_user_mapped, ['id'], ['name']);
@@ -190,7 +193,49 @@ class JobListingController extends Controller
 
         return $tag->map(function (object $value) {
             return $value->id;
-        })->all(); 
+        })->all();
+    }
+
+
+    private function countTotalUsedTags(array $tags, array $updatedTags){
+
+        $removed_tag = [];
+        $id_exist_in_updated_tags = [];
+
+        $db_not_updatedTags = $updatedTags;
+
+        // if there are removed tag then store it to $removed_tag
+        // if there are tag not removed then store the id to $id_exist_in.. tags
+        foreach ($tags as $old_value) {
+            $is_exist = false;
+            foreach ($updatedTags as $key => $updated_value) {
+                
+                if($old_value == $updated_value){
+                    $is_exist = true;
+                    array_push($id_exist_in_updated_tags, $key);
+                }
+            }
+
+            if(!$is_exist){
+                array_push($removed_tag, $old_value);
+            }
+        }
+
+
+        rsort($id_exist_in_updated_tags);
+
+        foreach ($id_exist_in_updated_tags as $idx) {
+            array_splice($db_not_updatedTags, $idx, 1);
+        }
+
+        // do update to database
+        foreach ($removed_tag as $id) {
+            Tag::where('id', $id)->decrement('total_used', 1);
+        }
+
+        foreach ($db_not_updatedTags as $id) {
+            Tag::where('id', $id)->increment('total_used', 1);
+        }
     }
 
     

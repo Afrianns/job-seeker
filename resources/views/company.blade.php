@@ -41,7 +41,7 @@
                     @php
                         $limit_tag = 3;
                     @endphp
-                    <div class="grid grid-cols-3 text-left">
+                    <div class="grid grid-cols-3 text-left gap-x-3">
                         @foreach ($company->jobs as $job)
                             <div class="py-3 px-5 bg-white border border-gray-300 rounded-md w-full space-y-2">
                                 <h2 class="text-2xl font-medium mt-5">{{ $job->title }}</h2>

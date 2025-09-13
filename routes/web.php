@@ -70,6 +70,8 @@ Route::get("/profile/company/verification/document/show/{verification_id}", [Com
 
 Route::prefix("admin")->middleware(AdminMiddleware::class)->group(function() { 
     Route::get("/", fn () => redirect("admin/company/document/verification"));
+
+    Route::post("/category/delete",[AdminController::class, "deleteCategoryPOST"])->name("category-delete-post");
     Route::get("/category", [AdminController::class, "category"])->name("category");
 
     Route::post("/company/document/verification", [AdminController::class, "companyDocumentInReviewPOST"])->name("verification-in-review-post");
@@ -85,6 +87,7 @@ Route::prefix("admin")->middleware(AdminMiddleware::class)->group(function() {
     Route::get("/reported/job/{id}", [AdminController::class, "reportedJobDetail"])->name("reported-job-detail");
 
     Route::post("/company/document/status/in-review/{id}", [CompanyController::class, "updateCompanyVerificationPOST"])->name("update-status-in-review");
+
 
 });
 

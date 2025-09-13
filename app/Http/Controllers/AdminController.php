@@ -33,7 +33,7 @@ class AdminController extends Controller
     }
 
     public function category() {    
-        $tags = Tag::all();
+        $tags = Tag::paginate(3);
         return view("admin.category", compact("tags"));
     }
 
@@ -65,6 +65,20 @@ class AdminController extends Controller
         if(isset($id)){
             $company = Company::with(["verification", "link"])->where("id", $id)->first();
             return view("admin.components.company-detail", compact('company'));
+        }
+    }
+
+    // tag/category created by related company
+    public function deleteCategoryPOST(Request $request) {
+
+        $validated = $request->validate([
+            "id" => "required",
+        ]);
+
+        $res = Tag::where("id", $validated["id"])->delete();
+
+        if($res >= 1){
+            return redirect()->to("/admin/category");
         }
     }
 
