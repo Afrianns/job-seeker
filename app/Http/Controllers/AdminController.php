@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\CompanyVerification;
+use App\Models\JobListing;
+use App\Models\ReportedJob;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
@@ -83,10 +86,20 @@ class AdminController extends Controller
     }
 
     public function reportedJobs() {
-        return view("admin.reported-job");
+        $jobs = JobListing::withCount("reported")->get();
+        $total_reported = ReportedJob::count();
+        return view("admin.reported-job", compact("jobs"), compact("total_reported"));
+    }
+
+    public function listReportMessage(string $id) {
+        $job = JobListing::where("id", $id)->first();
+        $reported_jobs = ReportedJob::where("job_listing_id", $id)->get();
+        return view("admin.list-report", compact("reported_jobs"), compact("job"));
     }
 
     public function reportedJobDetail(string $id) {
         return view("admin.components.reported-job-detail");
     }
 }
+
+

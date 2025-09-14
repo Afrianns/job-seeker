@@ -45,9 +45,7 @@
                         @foreach ($company->jobs as $job)
                             <div class="py-3 px-5 bg-white border border-gray-300 rounded-md w-full space-y-2">
                                 <h2 class="text-2xl font-medium mt-5">{{ $job->title }}</h2>
-                                
-                                <p class="text-gray-500">{{ Carbon\Carbon::now()->parse($job->created_at)->diffForHumans() }}</p>
-                                    
+                                <p class="text-gray-500">{{ Carbon\Carbon::now()->parse($job->created_at)->diffForHumans() }}</p>    
                                 <p>{{ Str::limit($job->description, 200, '...') }}</p>
                                 <div class="flex gap-x-1 items-center text-xs">
                                     @foreach ($job->tags as $tag)

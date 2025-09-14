@@ -55,7 +55,6 @@
                             <td class="px-6 py-4">
                                 <a href="{{ route('company-detail', ['id' => $company->id]) }}" class="font-medium text-blue-600  hover:underline">Company Detail</a>
                             </td>
-
                             <td class="px-6 py-4">
                                 <button class="text-blue-500 hover:underline cursor-pointer" x-on:click="openModal = {id:'{{ $company->id }}', type: 'review'}">Review This</button>
                             </td>

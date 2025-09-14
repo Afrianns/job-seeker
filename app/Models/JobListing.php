@@ -29,4 +29,9 @@ class JobListing extends Model
     {
         return $this->hasMany(Application::class);
     }
+
+    public function Reported(): HasMany
+    {
+        return $this->hasMany(ReportedJob::class);
+    }
 }

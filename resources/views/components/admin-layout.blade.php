@@ -51,12 +51,14 @@
                 </li>
             </ul>   
             <ul class="pt-4 mt-4 space-y-2 font-medium border-t border-gray-200">
-                <li>
-                    <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-red-100">
+                <form action="{{ route('admin-logout') }}" method="post">
+                    @csrf
+                    <button type="submit" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-red-100 w-full text-left cursor-pointer">
                         <svg class="shrink-0 w-5 h-5 text-gray-900 transition duration-75" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h7v2H5v14h7v2zm11-4l-1.375-1.45l2.55-2.55H9v-2h8.175l-2.55-2.55L16 7l5 5z"/></svg>
                         <span class="flex-1 ms-3 whitespace-nowrap">Logout</span>
-                    </a>
-                </li>
+                    </button>
+                </form>
+
             </ul>
         </div>
         </aside>

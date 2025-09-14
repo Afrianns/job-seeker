@@ -66,8 +66,6 @@ class ApplyingJobController extends Controller
             ];
         }
 
-        // $applications = Application::with("job")->get();
-
         $job_applications = JobListing::with("application")->where("id", $job_id)->first();
         return view("recruiter.applicants", compact("job_applications"), compact("selected_application"));
     }

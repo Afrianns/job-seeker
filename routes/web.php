@@ -8,6 +8,7 @@ use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\userMiddleware;
+use App\Models\Admin;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [JobListingController::class,"index"])->name("home");
@@ -27,7 +28,7 @@ Route::middleware("auth")->group(function() {
     Route::get("/profile", [ProfileController::class, "index"])->name("profile");
     Route::patch("/profile/update/{id}", [ProfileController::class, "updateProfilePOST"]);
     
-    Route::post("/logout",[AuthController::class, "logout"]);
+    Route::post("/logout",[AuthController::class, "logout"])->name("logout");
 
     Route::post("/profile/user/cv/upload", [ProfileController::class, "updateUserCVPOST"])->name("upload-user-cv");
 
@@ -41,6 +42,10 @@ Route::middleware("auth")->group(function() {
     Route::post("/delete-message", [ApplyingJobController::class, "DeletedMessage"])->name("delete-message");
 
     Route::get("/job/message/{job_id}", [ApplyingJobController::class, "getMessage"]);
+
+
+    // report job
+    Route::post("/report/job", [JobListingController::class, "reportingJob"])->name("reporting-job");
 
     Route::middleware("recruiter")->group(function() {  
 
@@ -88,7 +93,9 @@ Route::prefix("admin")->middleware(AdminMiddleware::class)->group(function() {
 
     Route::post("/company/document/status/in-review/{id}", [CompanyController::class, "updateCompanyVerificationPOST"])->name("update-status-in-review");
 
+    Route::get("/list/reported/{job_id}", [AdminController::class, "listReportMessage"])->name("list-reported");
 
+    Route::post("/logout", [AuthController::class, "adminLogout"])->name("admin-logout");
 });
 
 Route::middleware(userMiddleware::class)->group(function () {

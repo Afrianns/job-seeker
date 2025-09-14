@@ -94,10 +94,19 @@ class AuthController extends Controller
 
     public function logout(Request $request){
         Auth::logout();
- 
+
+        return $this->sessionRemove($request);
+    }
+
+    public function adminLogout(Request $request) {
+        Auth::guard("admin")->logout();
+
+        return $this->sessionRemove($request);
+    }
+
+    private function sessionRemove($request){
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-    
         return redirect('/');
     }
 }

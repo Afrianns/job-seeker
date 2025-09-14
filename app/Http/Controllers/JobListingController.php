@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\JobListing;
 use App\Models\JobTag;
+use App\Models\ReportedJob;
 use App\Models\Tag;
+use Illuminate\Auth\Events\Validated;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -154,6 +156,25 @@ class JobListingController extends Controller
         }
     }
 
+    public function reportingJob(Request $request){
+
+        $validated = $request->validate([
+            "user_id" => "required|exists:users,id",
+            "job_id" => "required|exists:job_listings,id",
+            "report-desc" => "required|min:5"
+        ]);
+
+        $result = ReportedJob::create([
+            "user_id" => $validated["user_id"], 
+            "job_listing_id" => $validated["job_id"],
+            "message" => $validated["report-desc"]
+        ]);
+
+        if($result){
+            return redirect("/detail/{$validated['job_id']}")->with("success", "Successfully reported");
+        }
+    }
+
 
     // Separate/split between tag that already exist in DB and not
     private function getAlreadyExistTagFromDB($tags) {
@@ -179,6 +200,7 @@ class JobListingController extends Controller
 
         return [$tag_in_db, $newly_tag];
     }
+
     
     // store all newly tags didnt exist in db and get all those tags id
     private function getNewlyTagToDB($newly_tag_by_user){
