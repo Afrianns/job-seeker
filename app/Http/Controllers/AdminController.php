@@ -5,10 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\CompanyVerification;
 use App\Models\JobListing;
+use App\Models\MessageToRecruiter;
+use App\Models\Report;
 use App\Models\ReportedJob;
+use App\Models\ReportMessage;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
@@ -86,15 +90,53 @@ class AdminController extends Controller
     }
 
     public function reportedJobs() {
-        $jobs = JobListing::withCount("reported")->get();
-        $total_reported = ReportedJob::count();
-        return view("admin.reported-job", compact("jobs"), compact("total_reported"));
+        $reports = Report::withCount("ReportMessage")->get();
+        $total_report = ReportMessage::count();
+        return view("admin.reported-job", compact("reports"), compact("total_report"));
     }
 
     public function listReportMessage(string $id) {
-        $job = JobListing::where("id", $id)->first();
-        $reported_jobs = ReportedJob::where("job_listing_id", $id)->get();
-        return view("admin.list-report", compact("reported_jobs"), compact("job"));
+        
+        $report = Report::with("ReportMessage")->where("id", $id)->first();
+        return view("admin.list-report", compact("report"));
+    }
+
+    public function messageToRecruiter(Request $request) {
+
+        $validated = $request->validate([
+            "report_id" => "required|exists:reports,id",
+            "type" => ["required", Rule::in("warning", "info")],
+            "message" => "required|min:5",
+        ]);
+
+        $result = MessageToRecruiter::create([
+            "report_id" => $validated["report_id"],
+            "type" => $validated["type"],
+            "message" => $validated["message"],
+        ]);
+
+        if($result){
+            return redirect()->back();
+        }
+    }   
+
+    public function adminReportResolved(Request $request){
+        $validated = $request->validate([
+            "report_id" => "required|exists:reports,id",
+        ]);
+
+        $update_result = Report::where("id", $validated["report_id"])->update([
+            "is_resolved" => true
+        ]);
+        
+        if($update_result){
+            $delete_result = ReportMessage::where("report_id", $validated["report_id"])->delete();
+            $delete_result_recruiter = MessageToRecruiter::where("report_id", $validated["report_id"])->delete();
+
+            if($delete_result && $delete_result_recruiter){
+                return Redirect::route("reported-jobs");
+            }
+        }
     }
 
     public function reportedJobDetail(string $id) {

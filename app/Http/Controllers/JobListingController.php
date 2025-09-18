@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\JobListing;
 use App\Models\JobTag;
+use App\Models\Report;
 use App\Models\ReportedJob;
+use App\Models\ReportMessage;
 use App\Models\Tag;
 use Illuminate\Auth\Events\Validated;
 use Illuminate\Support\Facades\Gate;
@@ -60,6 +62,12 @@ class JobListingController extends Controller
         }
         
         $job = JobListing::create($validated);
+
+        if($job){
+            Report::create([
+                "job_listing_id" => $job->id
+            ]);
+        }
     
         // if job id exist and $total_tags not empty then store it into jobTag model db
         if($job->id && count($total_tags) >= 1){
@@ -157,16 +165,18 @@ class JobListingController extends Controller
     }
 
     public function reportingJob(Request $request){
-
+        
         $validated = $request->validate([
             "user_id" => "required|exists:users,id",
-            "job_id" => "required|exists:job_listings,id",
+            // Job id is for redirect url
+            "job_id" => "required|job_listings,id",
+            "report_id" => "required|exists:reports,id",
             "report-desc" => "required|min:5"
         ]);
 
-        $result = ReportedJob::create([
+        $result = ReportMessage::create([
             "user_id" => $validated["user_id"], 
-            "job_listing_id" => $validated["job_id"],
+            "report_id" => $validated["report_id"],
             "message" => $validated["report-desc"]
         ]);
 
@@ -260,12 +270,39 @@ class JobListingController extends Controller
         }
     }
 
+    public function reportResolved(Request $request) {
+        $validated = $request->validate([
+            "report_id" => "required|exists:reports,id",
+        ]);
+
+        $result = Report::where("id", $validated["report_id"])->update([
+            "is_resolved_by_recruiter" => true
+        ]);
+
+        if($result){
+            return Redirect::route("reported-job-posted");
+        }
+
+        dd($validated);
+    }
+
     
     public function reportedJobPosted() {
         if(!Gate::allows("is_a_recruiter")){
             return Redirect::route("home");
         }
-        $jobs = JobListing::all();
-        return view("reported-jobs", compact("jobs"));
+        $reports = [];
+        
+        $result = Report::with(["job", "job.tags"])->withCount("MessageToRecruiter")->whereHas("job.company.recruiter", function ($q) {
+            $q->where("id", Auth::id());
+        })->get();
+
+        foreach ($result as $value) {
+            if($value->message_to_recruiter_count >= 1){
+                array_push($reports, $value);
+            }
+        }
+
+        return view("reported-jobs", compact("reports"));
     }
 }

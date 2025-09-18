@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\JobListing;
-use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,11 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('reported_jobs', function (Blueprint $table) {
+        Schema::create('reports', function (Blueprint $table) {
             $table->uuid("id")->primary();
-            $table->foreignIdFor(User::class);
-            $table->foreignIdFor(JobListing::class);
-            $table->text("message");
+            $table->foreignIdFor(JobListing::class)->constrained()->cascadeOnDelete();
+            $table->boolean("is_resolved")->default(false);
+            $table->boolean("is_resolved_by_recruiter")->default(false);
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('reported_jobs');
+        Schema::dropIfExists('reports');
     }
 };

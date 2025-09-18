@@ -61,6 +61,8 @@ Route::middleware("auth")->group(function() {
         Route::patch("/company/update/{id}", [CompanyController::class, "updateCompanyProfilePOST"]);
         Route::get("/profile/company/verification", [CompanyController::class, "companyVerificationInfo"])->name("company-verification-info");
         
+        Route::post("/reported/resolve", [JobListingController::class, "reportResolved"])->name("report-resolved-post");
+
         // Applications 
         Route::name("user-jobs-applications.")->group(function () {
             Route::get("/recruiter/application/jobs", [ApplyingJobController::class, "userJobsApplications"])->name("jobs");
@@ -87,13 +89,17 @@ Route::prefix("admin")->middleware(AdminMiddleware::class)->group(function() {
 
     Route::get("/reported", [AdminController::class, "reportedJobs"])->name("reported-jobs");
 
+    Route::post("/reported/resolve", [AdminController::class, "adminReportResolved"])->name("admin-report-resolved-post");
+
     Route::get("/company/{id}", [AdminController::class, "companyDetail"])->name("company-detail");
 
     Route::get("/reported/job/{id}", [AdminController::class, "reportedJobDetail"])->name("reported-job-detail");
 
     Route::post("/company/document/status/in-review/{id}", [CompanyController::class, "updateCompanyVerificationPOST"])->name("update-status-in-review");
 
-    Route::get("/list/reported/{job_id}", [AdminController::class, "listReportMessage"])->name("list-reported");
+    Route::get("/list/reported/{report_id}", [AdminController::class, "listReportMessage"])->name("list-reported");
+
+    Route::post("/send/message/recruiter",[AdminController::class, "messageToRecruiter"])->name("send-message-to-recruiter");
 
     Route::post("/logout", [AuthController::class, "adminLogout"])->name("admin-logout");
 });

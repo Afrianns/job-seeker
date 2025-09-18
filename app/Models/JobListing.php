@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class JobListing extends Model
@@ -30,8 +31,13 @@ class JobListing extends Model
         return $this->hasMany(Application::class);
     }
 
-    public function Reported(): HasMany
+    public function Report(): HasOne
     {
-        return $this->hasMany(ReportedJob::class);
+        return $this->hasOne(Report::class);
+    }
+
+    public function MessageToRecruiter(): HasMany
+    {
+        return $this->hasMany(MessageToRecruiter::class);
     }
 }

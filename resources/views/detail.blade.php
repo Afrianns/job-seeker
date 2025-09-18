@@ -133,6 +133,7 @@
                                     <div class="col-span-2">
                                         <input type="hidden" name="user_id" value="{{ Auth::user()->id }}">
                                         <input type="hidden" name="job_id" value="{{ $job->id }}">
+                                        <input type="hidden" name="report_id" value="{{ $job->report->id }}">
                                         <label for="description" class="block mb-2 text-sm font-medium text-gray-900">Problem About this Job</label>
                                         <textarea id="description" name="report-desc" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Write complaint description here"></textarea>                    
                                     </div>
