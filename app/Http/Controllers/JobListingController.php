@@ -85,7 +85,7 @@ class JobListingController extends Controller
 
     public function detailJob(string $id) {
         if(isset($id)){
-            $job = JobListing::with(["company","company.verification", "application" => function ($q) {
+            $job = JobListing::with(["company.verification", "application" => function ($q) {
                 if(Auth::check()){
                     return $q->where("user_id", Auth::user()->id);
                 }
@@ -94,12 +94,6 @@ class JobListingController extends Controller
             $tags_mapped = Arr::map(Tag::get()->toArray(), function(array $tag){
                 return $tag['name'];
             });
-
-            // $current_user_application = Arr::map($job->application->toArray(), function($a){
-            //     dump($a["user_id"]);
-            // });
-
-            // dd($current_user_application);
 
             return view("detail", ["job" => $job, "tags" => $tags_mapped]);
         }
@@ -169,7 +163,7 @@ class JobListingController extends Controller
         $validated = $request->validate([
             "user_id" => "required|exists:users,id",
             // Job id is for redirect url
-            "job_id" => "required|job_listings,id",
+            "job_id" => "required|exists:job_listings,id",
             "report_id" => "required|exists:reports,id",
             "report-desc" => "required|min:5"
         ]);

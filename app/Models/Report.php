@@ -18,12 +18,12 @@ class Report extends Model
         return $this->belongsTo(JobListing::class, "job_listing_id");
     }
 
-    public function ReportMessage(): HasMany
+    public function reportMessage(): HasMany
     {
         return $this->hasMany(ReportMessage::class);
     }
 
-    public function MessageToRecruiter(): HasMany
+    public function messageToRecruiter(): HasMany
     {
         return $this->hasMany(MessageToRecruiter::class);
     }

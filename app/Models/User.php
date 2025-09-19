@@ -63,8 +63,13 @@ class User extends Authenticatable
         return $this->hasOne(JobSeekerData::class);
     }
 
-    public function Application(): HasMany
+    public function application(): HasMany
     {
         return $this->hasMany(Application::class);
+    }
+
+    public function reportMessage(): HasMany
+    {
+        return $this->hasMany(ReportMessage::class);
     }
 }

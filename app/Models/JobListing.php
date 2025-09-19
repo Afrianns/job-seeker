@@ -16,27 +16,27 @@ class JobListing extends Model
 
     use HasUuids;
 
-    public function Tags(): BelongsToMany
+    public function tags(): BelongsToMany
     {
         return $this->BelongsToMany(Tag::class,"job_tags");
     }
 
-    public function Company(): BelongsTo
+    public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
     }
 
-    public function Application(): HasMany
+    public function application(): HasMany
     {
         return $this->hasMany(Application::class);
     }
 
-    public function Report(): HasOne
+    public function report(): HasOne
     {
         return $this->hasOne(Report::class);
     }
 
-    public function MessageToRecruiter(): HasMany
+    public function messageToRecruiter(): HasMany
     {
         return $this->hasMany(MessageToRecruiter::class);
     }

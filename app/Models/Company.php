@@ -17,7 +17,7 @@ class Company extends Model
     protected $fillable = ["name", "email","description","is_approved","verification_document"];
 
     
-    public function Jobs(): HasMany
+    public function jobs(): HasMany
     {
         return $this->hasMany(JobListing::class);
     }

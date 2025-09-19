@@ -4,14 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\CompanyVerification;
-use App\Models\JobListing;
 use App\Models\MessageToRecruiter;
 use App\Models\Report;
-use App\Models\ReportedJob;
 use App\Models\ReportMessage;
 use App\Models\Tag;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\Rule;
 
@@ -90,14 +87,14 @@ class AdminController extends Controller
     }
 
     public function reportedJobs() {
-        $reports = Report::withCount("ReportMessage")->get();
+        $reports = Report::withCount("reportMessage")->get();
         $total_report = ReportMessage::count();
         return view("admin.reported-job", compact("reports"), compact("total_report"));
     }
 
     public function listReportMessage(string $id) {
         
-        $report = Report::with("ReportMessage")->where("id", $id)->first();
+        $report = Report::with("reportMessage.user")->where("id", $id)->first();
         return view("admin.list-report", compact("report"));
     }
 
@@ -126,7 +123,7 @@ class AdminController extends Controller
         ]);
 
         $update_result = Report::where("id", $validated["report_id"])->update([
-            "is_resolved" => true
+            "is_resolved_by_recruiter" => false
         ]);
         
         if($update_result){
