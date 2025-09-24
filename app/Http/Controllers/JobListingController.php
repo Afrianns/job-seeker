@@ -17,12 +17,21 @@ use Illuminate\Support\Facades\Redirect;
 
 class JobListingController extends Controller
 {
-    public function index() {
+    public function index(Request $request) {
+        
+        
         $jobs = JobListing::with(["company","company.verification", "application" => function ($q) {
                     if(Auth::check()){
                         $q->where("user_id", Auth::user()->id);
                     }
-                }])->get();
+                }]);
+        
+        if($request->get("name")){
+            $jobs = $jobs->where("title", "like", "%" . $request->get('name') ."%")
+                ->orWhere("description", "like", "%" . $request->get('name') ."%")->get();
+        } else{
+            $jobs = $jobs->get();
+        }
 
         return view("home", ["jobs" => $jobs]);
     }

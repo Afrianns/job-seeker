@@ -16,6 +16,8 @@ Route::get('/', [JobListingController::class,"index"])->name("home");
 Route::get("/detail/{id}", [JobListingController::class, "detailJob"])->name("detail");
 Route::get("/company/{id}", [CompanyController::class, 'index'])->name("company");
 
+// Route::get("/search/job", [JobListingController::class, "searchJob"])->name("search-job");
+
 
 Route::middleware("auth")->group(function() {
 

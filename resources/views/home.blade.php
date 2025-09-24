@@ -3,6 +3,20 @@
     <x-slot:title>
         New Job
     </x-slot>
+    <div class="w-full py-2 bg-white border-b border-gray-300">
+        <form method="GET" action="{{ route('home') }}" class="max-w-1/2 mx-auto">
+            <div class="flex items-center gap-x-2 my-2">
+                @if (request("name"))
+                    <a href="{{ route('home') }}" class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-600 focus:ring-4 focus:ring-yellow-300 font-medium rounded-full text-sm px-5 py-2.5">Reset</a>
+                @endif
+                <input type="text" name="name" id="job_name" class='bg-gray-50 text-gray-900 text-sm rounded-lg block w-full p-2.5 border focus:ring-blue-500 focus:border-blue-500 border-gray-300' placeholder="Search for a job" value="{{ request("name") }}" required />
+                <button type="submit" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5">Search</button>
+            </div>
+            @error('name')
+                <p class="bg-red-500 text-red-50 py-2 px-5 rounded mt-3">{{ $message }}</p>
+            @enderror
+        </form>
+    </div>
     {{-- <div class="flex items-center lg:justify-center flex-col  min-h-screen  p-6 lg:p-8"> --}}
     <div class="flex max-w-[1140px] mx-auto justify-center mt-5">
         <section class="sticky top-5 w-full max-w-[400px] h-fit border bg-white border-gray-300 rounded p-5">
