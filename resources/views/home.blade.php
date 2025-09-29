@@ -1,4 +1,3 @@
-
 <x-layout>
     <x-slot:title>
         New Job
@@ -7,7 +6,11 @@
         <form method="GET" action="{{ route('home') }}" class="max-w-1/2 mx-auto">
             <div class="flex items-center gap-x-2 my-2">
                 @if (request("name"))
-                    <a href="{{ route('home') }}" class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-600 focus:ring-4 focus:ring-yellow-300 font-medium rounded-full text-sm px-5 py-2.5">Reset</a>
+                    <a href="{{ route('home', ['tags' => request("tags")]) }}" class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-600 focus:ring-4 focus:ring-yellow-300 font-medium rounded-full text-sm px-5 py-2.5">Reset</a>
+                @endif
+
+                @if (request("tags"))
+                    <input type="hidden" name="tags" value="{{ request("tags") }}">
                 @endif
                 <input type="text" name="name" id="job_name" class='bg-gray-50 text-gray-900 text-sm rounded-lg block w-full p-2.5 border focus:ring-blue-500 focus:border-blue-500 border-gray-300' placeholder="Search for a job" value="{{ request("name") }}" required />
                 <button type="submit" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5">Search</button>
@@ -17,10 +20,19 @@
             @enderror
         </form>
     </div>
-    {{-- <div class="flex items-center lg:justify-center flex-col  min-h-screen  p-6 lg:p-8"> --}}
-    <div class="flex max-w-[1140px] mx-auto justify-center mt-5">
+    <div class="flex max-w-[1140px] mx-auto justify-center mt-5" x-data="homeFunction" x-init="initalized">
         <section class="sticky top-5 w-full max-w-[400px] h-fit border bg-white border-gray-300 rounded p-5">
-            <h3>The Filters</h3>
+            <form x-on:submit.prevent="filtering" class="space-y-3">
+                <div class="bg-gray-100 border border-gray-300 w-full max-h-28 overflow-auto py-2 px-3 rounded">
+                    <div class="flex gap-x-1 text-xs flex-wrap">
+                        <template x-for="tag in tags">
+                            <p class="cursor-pointer" :class="{ 'tag-style': !checkIfSelected(tag.id), 'tag-style-active': checkIfSelected(tag.id) }" x-on:click="selectTag(tag.id)" x-text="tag.name"></p>
+                        </template>
+                    </div>
+                </div>
+                <button type="submit" class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2">Save</button>
+                <span class="text-orange-500 hover:underline cursor-pointer mx-5" x-on:click="selectedTags = []">Reset</span>
+            </form>
         </section>
         <section class="pl-6 max-w-[740px] w-full">
             <h2 class="mb-5 text-2xl font-medium">All Jobs</h2>
@@ -76,4 +88,54 @@
             
         </section>
     </div>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('homeFunction', () => ({
+
+                tags: @json($tags),
+                
+                selectedTags: [],
+
+                initalized() {
+                    this.selectedTags = @json(request("tags")).split(",")
+                },
+
+                selectTag(tagId){
+                    let idx = this.selectedTags.indexOf(tagId)
+                    if(idx == -1){
+                        this.selectedTags.push(tagId)
+                    } else{
+                        this.selectedTags.splice(idx, 1)
+                    }
+                },
+
+                filtering() {
+                    console.log(this.selectedTags)
+
+                    let params = new URLSearchParams(window.location.search)
+                    let name = @json(request('name'))
+
+                    if(name){
+                        params.set("name", @json(request('name')))
+                    } else{
+                        params.delete("name")
+                    }
+                    
+                    if(this.selectedTags.length > 0){
+                        params.set("tags", this.selectedTags)
+                    } else{
+                        params.delete("tags")
+                    }
+
+                    // Redirect with GET
+                    window.location = "{{ route('home') }}?" + params.toString();
+                },
+
+                checkIfSelected(tagId){
+                    console.log("res",tagId)
+                    return (this.selectedTags.indexOf(tagId) != -1)
+                }
+            }))
+        })
+    </script>
 </x-layout>

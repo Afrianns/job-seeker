@@ -18,22 +18,34 @@ use Illuminate\Support\Facades\Redirect;
 class JobListingController extends Controller
 {
     public function index(Request $request) {
-        
-        
+
         $jobs = JobListing::with(["company","company.verification", "application" => function ($q) {
                     if(Auth::check()){
                         $q->where("user_id", Auth::user()->id);
                     }
                 }]);
         
-        if($request->get("name")){
-            $jobs = $jobs->where("title", "like", "%" . $request->get('name') ."%")
-                ->orWhere("description", "like", "%" . $request->get('name') ."%")->get();
-        } else{
-            $jobs = $jobs->get();
+        if($request->get("tags")){
+            $tagIds = explode(",", $request->get("tags"));
+            foreach ($tagIds as $tagId) {
+                $jobs->whereHas('tags', function ($q) use ($tagId) {
+                    $q->where('tag_id', $tagId);
+                });
+            }
         }
 
-        return view("home", ["jobs" => $jobs]);
+        if($request->get("name")){
+            $query = $request->get("name");
+            $jobs->where(function ($q) use ($query) {
+                $q->where("title", "like", "%" . $query ."%")
+                    ->orWhere("description", "like", "%" . $query ."%");
+            });
+        }
+        
+        $tags = Tag::all();
+
+        $jobs = $jobs->get();
+        return view("home", compact("jobs"), compact("tags"));
     }
     public function createJob() {
         $tags_mapped = Arr::map(Tag::get()->toArray(), function(array $tag){
@@ -294,6 +306,7 @@ class JobListingController extends Controller
         if(!Gate::allows("is_a_recruiter")){
             return Redirect::route("home");
         }
+        
         $reports = [];
         
         $result = Report::with(["job", "job.tags"])->withCount("MessageToRecruiter")->whereHas("job.company.recruiter", function ($q) {

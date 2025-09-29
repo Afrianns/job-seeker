@@ -24,6 +24,10 @@
     @apply py-1 px-3 bg-gray-200 rounded border border-gray-300;
 }
 
+.tag-style-active{
+    @apply py-1 px-3 bg-purple-200 rounded border border-purple-300;
+}
+
 .title-style {
     @apply text-xl my-3 font-bold;
 }
